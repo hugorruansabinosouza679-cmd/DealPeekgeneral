@@ -1391,7 +1391,10 @@
 
                             <!-- MEMBROS -->
                             <div id="admin-sec-membros" class="admin-sec hidden space-y-3">
-                                <h2 class="text-base font-black">Membros do site</h2>
+                                <div>
+                                    <h2 class="text-base font-black">Membros do site</h2>
+                                    <p class="text-[11px] text-slate-500">Admin: verificar posts · Pedido admin: aceitar · Demais: membro apenas</p>
+                                </div>
                                 <div id="admin-dash-members-list" class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden"></div>
                             </div>
 
@@ -3181,16 +3184,172 @@
             }).join('');
         }
 
+        function findAdminByEmail(email) {
+            const em = String(email || '').toLowerCase();
+            return (admins || []).find(function(a) {
+                return a && (a.email || '').toLowerCase() === em;
+            }) || null;
+        }
+
+        function adminViewMemberPosts(email) {
+            const em = String(email || '').toLowerCase();
+            const adm = findAdminByEmail(em);
+            if (!adm || adm.pending) {
+                if (typeof showSiteToast === 'function') showSiteToast('Só admins aprovados têm posts para verificar.', 'info');
+                return;
+            }
+            const ownerUser = adm.user || '';
+            const mine = (products || []).filter(function(p) {
+                return p && (
+                    (p.owner && String(p.owner).toLowerCase() === String(ownerUser).toLowerCase()) ||
+                    (p.ownerEmail && String(p.ownerEmail).toLowerCase() === em)
+                );
+            });
+            const mineA = (announcements || []).filter(function(a) {
+                return a && (
+                    (a.owner && String(a.owner).toLowerCase() === String(ownerUser).toLowerCase()) ||
+                    (a.ownerEmail && String(a.ownerEmail).toLowerCase() === em)
+                );
+            });
+            let msg = 'Itens de @' + ownerUser + ':\n';
+            msg += mine.length + ' produto(s), ' + mineA.length + ' anúncio(s).';
+            if (mine.length) {
+                msg += '\n\nProdutos:\n' + mine.slice(0, 8).map(function(p) {
+                    return '· ' + (p.title || 'sem título') + (p.paused ? ' (pausado)' : '');
+                }).join('\n');
+            }
+            if (typeof adminShowSection === 'function') adminShowSection('produtos');
+            // Lista filtrada temporária na área produtos
+            const box = document.getElementById('admin-dash-products-list');
+            if (box) {
+                if (!mine.length && !mineA.length) {
+                    box.innerHTML = '<p class="text-xs text-slate-400 p-4 bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800">Nenhum item publicado por este admin.</p>';
+                } else {
+                    let html = '<p class="text-[11px] text-slate-400 mb-2">Verificando posts de @' + String(ownerUser).replace(/</g,'&lt;') + '</p>';
+                    mine.forEach(function(p) {
+                        html += '<div class="flex items-center gap-2 p-3 bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 mb-2">' +
+                            '<img src="' + (p.image || '') + '" class="w-12 h-12 rounded-xl object-cover bg-slate-200 flex-shrink-0" onerror="this.style.opacity=0.3">' +
+                            '<div class="min-w-0 flex-1"><p class="font-bold text-xs truncate">' + String(p.title || '').replace(/</g,'&lt;') + '</p>' +
+                            '<p class="text-[11px] text-brandYellow-500 font-black">R$ ' + Number(p.price || 0).toFixed(2) + (p.paused ? ' · pausado' : '') + '</p></div>' +
+                            '<button type="button" onclick="editProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold">Editar</button>' +
+                            '<button type="button" onclick="togglePauseProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-slate-600 text-white text-[10px] font-bold">Pausar</button>' +
+                            '<button type="button" onclick="deleteProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button></div>';
+                    });
+                    mineA.forEach(function(a) {
+                        html += '<div class="flex items-center gap-2 p-3 bg-white dark:bg-darkcard rounded-2xl border border-blue-500/30 mb-2">' +
+                            '<div class="min-w-0 flex-1"><p class="font-bold text-xs truncate">' + String(a.title || '').replace(/</g,'&lt;') + '</p></div>' +
+                            '<button type="button" onclick="editAnnouncement(' + a.id + ')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold">Editar</button>' +
+                            '<button type="button" onclick="deleteProduct(' + a.id + ')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button></div>';
+                    });
+                    box.innerHTML = html;
+                }
+            }
+            if (typeof showSiteToast === 'function') showSiteToast(msg.replace(/\n/g, ' '), 'info');
+        }
+
+        function adminEditMemberProfile(email) {
+            const em = String(email || '').toLowerCase();
+            const users = window._siteUsers || [];
+            const u = users.find(function(x) { return (x.email || '').toLowerCase() === em; });
+            if (!u) {
+                if (typeof showSiteToast === 'function') showSiteToast('Membro não encontrado.', 'error');
+                return;
+            }
+            const novo = prompt('Novo nome de usuário para ' + (u.email || '') + ':', u.username || u.name || '');
+            if (novo == null) return;
+            const name = String(novo).trim();
+            if (!name) {
+                if (typeof showSiteToast === 'function') showSiteToast('Nome inválido.', 'error');
+                return;
+            }
+            u.username = name;
+            u.name = name;
+            try { localStorage.setItem('dp_users', JSON.stringify(window._siteUsers)); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            renderAdminDashMembers();
+            if (typeof showSiteToast === 'function') showSiteToast('Perfil atualizado.', 'success');
+        }
+
+        function adminDeleteMember(email) {
+            const em = String(email || '').toLowerCase();
+            if (!em) return;
+            const ok = confirm('Excluir o perfil de ' + em + '? Isso remove o membro da lista (não apaga produtos já publicados de admin).');
+            if (!ok) return;
+            window._siteUsers = (window._siteUsers || []).filter(function(x) {
+                return (x.email || '').toLowerCase() !== em;
+            });
+            try { localStorage.setItem('dp_users', JSON.stringify(window._siteUsers)); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            renderAdminDashMembers();
+            if (typeof showSiteToast === 'function') showSiteToast('Perfil removido.', 'success');
+        }
+
         function renderAdminDashMembers() {
             const box = document.getElementById('admin-dash-members-list');
             if (!box) return;
             const users = window._siteUsers || [];
-            if (!users.length) {
+            // Inclui admins pendentes que ainda não estão em users
+            const byEmail = new Map();
+            users.forEach(function(u) {
+                if (u && u.email) byEmail.set(String(u.email).toLowerCase(), u);
+            });
+            (admins || []).forEach(function(a) {
+                if (!a || !a.email) return;
+                const em = String(a.email).toLowerCase();
+                if (!byEmail.has(em)) {
+                    byEmail.set(em, {
+                        email: a.email,
+                        username: a.user || a.email.split('@')[0],
+                        name: a.user || '',
+                        provider: 'admin-request'
+                    });
+                }
+            });
+            const list = Array.from(byEmail.values());
+            if (!list.length) {
                 box.innerHTML = '<p class="p-4 text-xs text-slate-400">Nenhum membro cadastrado ainda.</p>';
                 return;
             }
-            box.innerHTML = users.map(function(u) {
-                return '<div class="flex items-center justify-between gap-2 px-3 py-2.5"><div class="min-w-0"><p class="font-bold text-xs truncate">@' + (u.username || 'user') + '</p><p class="text-[10px] text-slate-400 truncate">' + (u.email || '') + '</p></div><span class="text-[10px] font-bold text-slate-400">' + (u.provider || 'email') + '</span></div>';
+            box.innerHTML = list.map(function(u) {
+                const em = String(u.email || '').toLowerCase();
+                const emSafe = em.replace(/'/g, '');
+                const adm = findAdminByEmail(em);
+                const isPending = !!(adm && adm.pending);
+                const isAdmin = !!(adm && !adm.pending);
+                let statusHtml = '';
+                let actionsHtml = '';
+                if (isPending) {
+                    statusHtml = '<span class="text-[10px] font-bold text-amber-500">Pediu conta admin</span>';
+                    actionsHtml =
+                        '<button type="button" onclick="approvePendingAdmin(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold">Aceitar admin</button>' +
+                        '<button type="button" onclick="rejectPendingAdmin(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Recusar</button>';
+                } else if (isAdmin) {
+                    statusHtml = '<span class="text-[10px] font-bold text-emerald-500">Admin</span>';
+                    actionsHtml =
+                        '<button type="button" onclick="adminViewMemberPosts(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold">Verificar posts</button>' +
+                        '<button type="button" onclick="adminEditMemberProfile(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-slate-600 text-white text-[10px] font-bold">Editar</button>' +
+                        '<button type="button" onclick="adminDeleteMember(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button>';
+                } else {
+                    statusHtml = '<span class="text-[10px] font-bold text-slate-400">Membro apenas</span>';
+                    actionsHtml =
+                        '<button type="button" onclick="adminEditMemberProfile(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-slate-600 text-white text-[10px] font-bold">Editar</button>' +
+                        '<button type="button" onclick="adminDeleteMember(\'' + emSafe + '\')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button>';
+                }
+                const display = String(u.name || u.username || 'user').replace(/</g, '&lt;');
+                const mail = String(u.email || '').replace(/</g, '&lt;');
+                return (
+                    '<div class="px-3 py-3 space-y-2">' +
+                    '<div class="flex items-start justify-between gap-2">' +
+                    '<div class="min-w-0">' +
+                    '<p class="font-bold text-xs truncate">@' + display + '</p>' +
+                    '<p class="text-[10px] text-slate-400 truncate">' + mail + '</p>' +
+                    statusHtml +
+                    '</div></div>' +
+                    '<div class="flex flex-wrap gap-1.5">' + actionsHtml + '</div>' +
+                    '</div>'
+                );
             }).join('');
         }
 
@@ -3597,6 +3756,7 @@ function updateAdminMetrics() {
             if (typeof saveStore === 'function') saveStore();
             if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
             renderPendingAdmins();
+            if (typeof renderAdminDashMembers === 'function') renderAdminDashMembers();
             if (typeof showSiteToast === 'function') showSiteToast('Admin aprovado: ' + em, 'success');
         }
 
@@ -3607,6 +3767,7 @@ function updateAdminMetrics() {
             if (typeof saveStore === 'function') saveStore();
             if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
             renderPendingAdmins();
+            if (typeof renderAdminDashMembers === 'function') renderAdminDashMembers();
             if (typeof showSiteToast === 'function') showSiteToast('Pedido recusado.', 'info');
         }
 
@@ -6255,88 +6416,4 @@ function updateAdminMetrics() {
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1">Mensagem</label>
-                    <textarea id="bug-report-msg" required rows="4" placeholder="Descreva com detalhes o que aconteceu ou o que você gostaria de ver..." class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500 resize-y"></textarea>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 mb-1">Seu e-mail (opcional)</label>
-                    <input id="bug-report-email" type="email" placeholder="para resposta, se quiser" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
-                </div>
-                <button type="submit" class="w-full py-3 rounded-xl font-extrabold text-sm bg-brandYellow-500 hover:bg-brandYellow-400 text-navy-900 transition">Enviar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Termos / Privacidade / Créditos -->
-    <div id="legal-modal" class="hidden fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl p-5 shadow-2xl relative text-slate-800 dark:text-slate-100">
-            <button type="button" onclick="closeLegalModal()" class="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            <h3 id="legal-modal-title" class="text-lg font-black mb-3 pr-8">Documentos</h3>
-            <div id="legal-modal-body" class="text-sm leading-relaxed text-slate-600 dark:text-slate-300"></div>
-        </div>
-    </div>
-
-    <!-- Barra inferior estilo app (só celular) -->
-    <nav id="mobile-bottom-nav" aria-label="Navegação principal">
-        <button type="button" class="mnav-btn active" data-nav="home" onclick="mobileNavHome()">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-            <span>Início</span>
-        </button>
-        <button type="button" class="mnav-btn" data-nav="search" onclick="mobileNavSearch()">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-            <span>Buscar</span>
-        </button>
-        <button type="button" class="mnav-btn" data-nav="cart" onclick="mobileNavCart()">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
-            <span>Carrinho</span>
-            <span id="mnav-cart-badge" class="mnav-badge" style="display:none">0</span>
-        </button>
-        <button type="button" class="mnav-btn" data-nav="settings" onclick="mobileNavSettings(event)">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>Ajustes</span>
-        </button>
-    </nav>
-
-    <!-- FOOTER: créditos, políticas, WhatsApp e Instagram -->
-    <footer class="mt-auto border-t border-darkborder bg-darkcard text-slate-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                <div>
-                    <div class="text-xl font-black tracking-tight mb-1">
-                        <span class="text-white">Deal</span><span class="text-brandYellow-500">Peek</span>
-                        <span class="text-[10px] uppercase tracking-[0.25em] text-brandYellow-500 font-black block -mt-0.5">GENERAL</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Curadoria de promoções e afiliados. Peek. Buy. Smile. Não vendemos direto — você finaliza no site parceiro.</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-brandYellow-500 mb-3">Políticas e créditos</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><button type="button" onclick="openLegalModal('terms')" class="hover:text-brandYellow-400 transition text-left">Termos de Uso</button></li>
-                        <li><button type="button" onclick="openLegalModal('privacy')" class="hover:text-brandYellow-400 transition text-left">Política de Privacidade</button></li>
-                        <li><button type="button" onclick="openLegalModal('credits')" class="hover:text-brandYellow-400 transition text-left">Créditos e avisos legais</button></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-brandYellow-500 mb-3">Contato</h4>
-                    <div class="flex flex-col gap-2">
-                        <a href="https://wa.me/556981080173" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-600/30 font-bold text-sm transition">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                            WhatsApp +55 69 8108-0173
-                        </a>
-                        <a href="https://www.instagram.com/Deal_Peek_General/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-pink-600/20 border border-pink-500/40 text-pink-400 hover:bg-pink-600/30 font-bold text-sm transition">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                            Instagram @Deal_Peek_General
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
-                <p>© <span id="footer-year"></span> DealPeek General. Peek. Buy. Smile.</p>
-                <p class="text-center sm:text-right">Links de afiliado · Ofertas curadas · Plataformas confiáveis</p>
-            </div>
-        </div>
-    </footer>
-    <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
-</body>
-</html>
+         
