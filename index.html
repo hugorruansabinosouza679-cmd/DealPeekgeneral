@@ -1090,7 +1090,7 @@
                                 </div>
                                 <div class="flex items-center gap-3 px-4 py-3.5">
                                     <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Notificações de ofertas</h4><p class="text-[10px] text-slate-400">Avisos no sino</p></div>
-                                    <label class="ios-switch"><input type="checkbox" id="pref-notif" checked onchange="savePrefs()"><span class="ios-slider"></span></label>
+                                    <label class="ios-switch"><input type="checkbox" id="pref-notif" checked onchange="savePrefs(); if(typeof renderNotificationsList==='function')renderNotificationsList();"><span class="ios-slider"></span></label>
                                 </div>
                             </div>
                         </div>
@@ -1824,9 +1824,41 @@
             if (bugs != null && Array.isArray(bugs)) {
                 try { localStorage.setItem('dp_bug_reports', JSON.stringify(bugs)); } catch (e) {}
             }
-            if (data.prefs != null && typeof data.prefs === 'object') {
-                try { localStorage.setItem('dp_prefs', JSON.stringify(data.prefs)); } catch (e) {}
+            // Avisos globais (manuais) vindos da nuvem
+            var remoteNotifs = null;
+            if (data.prefs && Array.isArray(data.prefs.siteNotifications)) {
+                remoteNotifs = data.prefs.siteNotifications;
+            } else if (data.sales && Array.isArray(data.sales.notifications)) {
+                remoteNotifs = data.sales.notifications;
             }
+            if (remoteNotifs) {
+                try {
+                    var localN = [];
+                    try { localN = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e2) {}
+                    var merged;
+                    if (preferRemote) {
+                        merged = remoteNotifs.slice();
+                    } else {
+                        var byId = new Map();
+                        remoteNotifs.forEach(function(n) {
+                            if (n && n.id != null) byId.set(String(n.id), n);
+                        });
+                        (localN || []).forEach(function(n) {
+                            if (!n || n.id == null) return;
+                            if (!byId.has(String(n.id))) byId.set(String(n.id), n);
+                        });
+                        merged = Array.from(byId.values());
+                    }
+                    merged.sort(function(a, b) {
+                        return String(b.at || '').localeCompare(String(a.at || ''));
+                    });
+                    localStorage.setItem('dp_notifications', JSON.stringify(merged.slice(0, 50)));
+                } catch (e) {}
+                if (typeof renderNotificationsList === 'function') {
+                    try { renderNotificationsList(); } catch (e3) {}
+                }
+            }
+            // prefs do main só carrega siteNotifications — não sobrescreve prefs do usuário
         }
 
         function mirrorStateToLocalStorage() {
@@ -1841,10 +1873,14 @@
         }
 
         function buildCloudPayload() {
-            // Registro GLOBAL (id = main): catálogo + admins + lista de usuários
+            // Registro GLOBAL (id = main): catálogo + admins + lista de usuários + avisos
             // Carrinho e prefs de cada pessoa ficam no registro u:email
             var bugs = [];
+            var notifs = [];
             try { bugs = JSON.parse(localStorage.getItem('dp_bug_reports') || '[]'); } catch (e) { bugs = []; }
+            try { notifs = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) { notifs = []; }
+            // só avisos manuais (não auto-ofertas)
+            notifs = (notifs || []).filter(function(n) { return n && !n.auto && n.type !== 'offer'; });
             return {
                 id: 'main',
                 products: products || [],
@@ -1852,9 +1888,9 @@
                 admins: admins || [],
                 users: window._siteUsers || [],
                 cart: [],
-                sales: { total: totalSalesVal || 0 },
+                sales: { total: totalSalesVal || 0, notifications: notifs },
                 bug_reports: bugs,
-                prefs: {},
+                prefs: { siteNotifications: notifs },
                 updated_at: new Date().toISOString()
             };
         }
@@ -3404,15 +3440,30 @@ function updateAdminMetrics() {
             return s.slice(0, maxLen - 1).trim() + '…';
         }
 
+        function userWantsPromoNotifs() {
+            try {
+                const prefs = JSON.parse(localStorage.getItem('dp_prefs') || '{}');
+                if (prefs.notif === false) return false;
+            } catch (e) {}
+            const el = document.getElementById('pref-notif');
+            if (el && el.checked === false) return false;
+            return true;
+        }
+
         function getSiteNotifications() {
             let list = [];
             try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) { list = []; }
             // Manuais primeiro (novos no topo — unshift na gravação)
-            const manual = (list || []).slice().sort(function(a, b) {
+            const manual = (list || []).filter(function(n) {
+                return n && !n.auto && n.type !== 'offer';
+            }).slice().sort(function(a, b) {
                 return String(b.at || '').localeCompare(String(a.at || ''));
             });
-            // Auto: promoções com imagem + resumo
+            // Auto: promoções com imagem + resumo (só se o usuário permitir)
             const auto = [];
+            if (!userWantsPromoNotifs()) {
+                return manual.slice(0, 25);
+            }
             try {
                 const ranked = (products || []).filter(function(p) {
                     return p && !p.paused && p.price != null && (
@@ -3517,8 +3568,8 @@ function updateAdminMetrics() {
             try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
             list.unshift({ id: 'n' + Date.now(), title: title, body: body, at: new Date().toISOString(), auto: false });
             try { localStorage.setItem('dp_notifications', JSON.stringify(list.slice(0, 50))); } catch (e) {}
-            // espelha no prefs/cloud via saveStore se possível
             if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
             const ti = document.getElementById('notif-new-title');
             const bi = document.getElementById('notif-new-body');
             if (ti) ti.value = '';
@@ -5506,7 +5557,8 @@ function updateAdminMetrics() {
                 }
                 if (prefs.notif !== undefined) {
                     const t = document.getElementById('pref-notif');
-                    if (t) t.checked = prefs.notif;
+                    if (t) t.checked = !!prefs.notif;
+                    if (typeof renderNotificationsList === 'function') renderNotificationsList();
                 }
             } catch (e) {}
         }
