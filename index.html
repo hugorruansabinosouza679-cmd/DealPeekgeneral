@@ -549,6 +549,7 @@
                     <div class="relative" id="notif-wrapper">
                         <button onclick="toggleNotificationsMenu(event)" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative transition flex flex-col items-center" title="Notificações">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"></path></svg>
+                            <span id="notif-bell-badge" class="hidden absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brandYellow-500 text-navy-900 text-[10px] font-black flex items-center justify-center border-2 border-white dark:border-darkcard shadow">0</span>
                             <span class="elder-badge hidden text-[10px] font-bold text-slate-400">Avisos</span>
                         </button>
 
@@ -559,12 +560,6 @@
                                 <span id="notif-count-badge" class="bg-brandYellow-500 text-navy-900 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
                             </div>
                             <div id="notifications-list" class="space-y-2 text-xs max-h-80 overflow-y-auto"></div>
-                            <div id="notif-owner-compose" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                                <p class="text-[10px] font-bold uppercase text-brandYellow-500">Nova notificação (só dono)</p>
-                                <input id="notif-new-title" type="text" placeholder="Título" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs">
-                                <input id="notif-new-body" type="text" placeholder="Mensagem" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs">
-                                <button type="button" onclick="addOwnerNotification()" class="w-full py-2 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">Publicar aviso</button>
-                            </div>
                         </div>
                     </div>
 
@@ -3504,10 +3499,21 @@ function updateAdminMetrics() {
         function renderNotificationsList() {
             const box = document.getElementById('notifications-list');
             const badge = document.getElementById('notif-count-badge');
-            const compose = document.getElementById('notif-owner-compose');
+            const bellBadge = document.getElementById('notif-bell-badge');
             if (!box) return;
             const list = getSiteNotifications();
-            if (badge) badge.textContent = String(list.length);
+            const n = list.length;
+            if (badge) badge.textContent = String(n);
+            if (bellBadge) {
+                if (n > 0) {
+                    bellBadge.textContent = n > 99 ? '99+' : String(n);
+                    bellBadge.classList.remove('hidden');
+                    bellBadge.style.display = 'flex';
+                } else {
+                    bellBadge.classList.add('hidden');
+                    bellBadge.style.display = 'none';
+                }
+            }
             if (!list.length) {
                 box.innerHTML = '<p class="text-[11px] text-slate-400 p-2">Nenhuma notificação no momento.</p>';
             } else {
@@ -3548,11 +3554,6 @@ function updateAdminMetrics() {
                         '</div>'
                     );
                 }).join('');
-            }
-            if (compose) {
-                // Esconde compose no sino se já tem no Admin — ou mantém só dono
-                if (typeof isSiteOwner === 'function' && isSiteOwner()) compose.classList.remove('hidden');
-                else compose.classList.add('hidden');
             }
         }
 
