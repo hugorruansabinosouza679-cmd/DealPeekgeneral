@@ -965,8 +965,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <button type="button" id="admin-exit-btn" onclick="lockAdminMode()" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-red-500">Sair</button>
-                    <span id="current-admin-label" class="hidden text-[10px] font-bold text-brandYellow-500 max-w-[72px] truncate"></span>
                     <button type="button" id="tab-admin-btn" onclick="switchSettingsTab('admin')" class="w-8 h-8 rounded-full bg-slate-800 dark:bg-brandYellow-500 text-white dark:text-navy-900 shadow flex items-center justify-center relative" title="Área Admin">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
                         <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-white dark:border-darkcard"></span>
@@ -1446,6 +1444,10 @@
                                         <!-- Conta -->
                                         <div id="admin-cfg-conta" class="admin-cfg-panel space-y-2">
                                             <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <div class="px-4 py-3.5">
+                                                    <p class="text-sm font-bold">Conta admin</p>
+                                                    <p class="text-[11px] text-brandYellow-500 font-bold mt-1" id="admin-cfg-conta-user">—</p>
+                                                </div>
                                                 <button type="button" onclick="openAdminCredsModal()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
                                                     <p class="text-sm font-bold">Usuário e senha do painel</p>
                                                     <p class="text-[11px] text-slate-400">Alterar login desta conta admin</p>
@@ -1525,14 +1527,15 @@
                                         <!-- Segurança -->
                                         <div id="admin-cfg-seguranca" class="admin-cfg-panel hidden space-y-2">
                                             <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-                                                <button type="button" onclick="lockAdminMode()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
-                                                    <p class="text-sm font-bold text-red-500">Sair do painel Admin</p>
-                                                    <p class="text-[11px] text-slate-400">Encerra a sessão admin neste dispositivo</p>
-                                                </button>
                                                 <div class="px-4 py-3.5">
                                                     <p class="text-sm font-bold">Sessão atual</p>
-                                                    <p class="text-[11px] text-slate-400 mt-1">Admin logado: <span id="admin-cfg-session-user">—</span></p>
+                                                    <p class="text-[11px] text-slate-400 mt-1">Admin logado: <span id="admin-cfg-session-user" class="font-bold text-brandYellow-500">—</span></p>
+                                                    <p class="text-[10px] text-slate-500 mt-1">Sair e o @usuário aparecem só aqui em Configurações</p>
                                                 </div>
+                                                <button type="button" id="admin-exit-btn" onclick="lockAdminMode()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold text-red-500">Sair</p>
+                                                    <p class="text-[11px] text-slate-400">Encerra a sessão admin neste dispositivo</p>
+                                                </button>
                                             </div>
                                         </div>
                                         <!-- Avançado -->
@@ -1556,6 +1559,7 @@
                     </div>
                 </div>
 
+                    <span id="current-admin-label" class="hidden"></span>
                     <div id="admin-products-manage" class="hidden"></div>
                     <div id="admin-my-announcements" class="hidden"></div>
                     <div id="admin-no-my-ann" class="hidden"></div>
@@ -2982,8 +2986,13 @@
             if (name === 'notificacoes' || name === 'dados') {
                 renderAdminCfgNotifList();
             }
+            const labelTxt = currentAdmin
+                ? ('@' + (currentAdmin.user || '') + (currentAdmin.email ? ' · ' + currentAdmin.email : ''))
+                : '—';
             const su = document.getElementById('admin-cfg-session-user');
-            if (su && currentAdmin) su.textContent = '@' + (currentAdmin.user || '') + (currentAdmin.email ? ' · ' + currentAdmin.email : '');
+            if (su) su.textContent = labelTxt;
+            const cu = document.getElementById('admin-cfg-conta-user');
+            if (cu) cu.textContent = labelTxt;
         }
 
         function addAdminNotificationFromConfig(useSecond) {
@@ -4392,6 +4401,24 @@ function updateAdminMetrics() {
         }
 
 
+        
+        function updateAdminHeaderChrome(onAdminTab) {
+            // Sair e @usuario NÃO ficam no header — só em Configurações do Admin
+            const lab = document.getElementById('current-admin-label');
+            if (lab) {
+                lab.classList.add('hidden');
+                if (currentAdmin) lab.textContent = '@' + (currentAdmin.user || '');
+            }
+            // admin-exit-btn fica sempre visível dentro de Config > Segurança (não no topo)
+            const labelTxt = (typeof currentAdmin !== 'undefined' && currentAdmin)
+                ? ('@' + (currentAdmin.user || '') + (currentAdmin.email ? ' · ' + currentAdmin.email : ''))
+                : '—';
+            const su = document.getElementById('admin-cfg-session-user');
+            if (su) su.textContent = labelTxt;
+            const cu = document.getElementById('admin-cfg-conta-user');
+            if (cu) cu.textContent = labelTxt;
+        }
+
         function switchSettingsTab(tab) {
             const prefContent = document.getElementById('tab-pref-content');
             const adminContent = document.getElementById('tab-admin-content');
@@ -4410,6 +4437,8 @@ function updateAdminMetrics() {
                 if (titleEl) titleEl.textContent = 'Ajustes';
                 if (typeof userShowCfg === 'function') userShowCfg('sistema');
                 if (subEl) subEl.textContent = 'Preferências do DealPeek';
+                // Sair / @user só no Admin
+                if (typeof updateAdminHeaderChrome === 'function') updateAdminHeaderChrome(false);
             } else {
                 if (prefContent) prefContent.classList.add('hidden');
                 if (adminContent) adminContent.classList.remove('hidden');
@@ -4424,6 +4453,7 @@ function updateAdminMetrics() {
                 if (typeof updateAdminUIForAccount === 'function') updateAdminUIForAccount();
                 if (typeof restoreAdminSession === 'function') restoreAdminSession();
                 if (typeof renderAdminSuggestionsPanel === 'function') renderAdminSuggestionsPanel();
+                if (typeof updateAdminHeaderChrome === 'function') updateAdminHeaderChrome(!!currentAdmin);
             }
         }
         function settingsBackArrow() {
@@ -4688,14 +4718,11 @@ function updateAdminMetrics() {
             document.getElementById('admin-locked-view').classList.add('hidden');
             document.getElementById('admin-unlocked-view').classList.remove('hidden');
             const _lab = document.getElementById('current-admin-label');
-            if (_lab) {
-                _lab.textContent = '@' + currentAdmin.user;
-                _lab.classList.remove('hidden');
-            }
-            const _ex = document.getElementById('admin-exit-btn');
-            if (_ex) _ex.classList.remove('hidden');
+            if (_lab) _lab.textContent = '@' + currentAdmin.user;
+            const _su = document.getElementById('admin-cfg-session-user');
+            if (_su) _su.textContent = '@' + currentAdmin.user + (currentAdmin.email ? ' · ' + currentAdmin.email : '');
             const _sub = document.getElementById('settings-header-sub');
-            if (_sub) _sub.textContent = '@' + currentAdmin.user;
+            if (_sub) _sub.textContent = 'Painel administrativo';
             renderMyAnnouncements();
             populateOtherAdminSelect();
             if (typeof renderAdminProductsManage === 'function') renderAdminProductsManage();
@@ -4719,9 +4746,9 @@ function updateAdminMetrics() {
             if (unlocked) unlocked.classList.add('hidden');
             if (locked) locked.classList.remove('hidden');
             const label = document.getElementById('current-admin-label');
-            if (label) { label.textContent = ''; label.classList.add('hidden'); }
-            const ex = document.getElementById('admin-exit-btn');
-            if (ex) ex.classList.add('hidden');
+            if (label) label.textContent = '';
+            const su = document.getElementById('admin-cfg-session-user');
+            if (su) su.textContent = '—';
             const sub = document.getElementById('settings-header-sub');
             if (sub) sub.textContent = 'Painel administrativo';
         }
@@ -4746,9 +4773,10 @@ function updateAdminMetrics() {
                 if (locked) locked.classList.add('hidden');
                 if (unlocked) unlocked.classList.remove('hidden');
                 const label = document.getElementById('current-admin-label');
-                if (label) { label.textContent = '@' + currentAdmin.user; label.classList.remove('hidden'); }
-                const ex2 = document.getElementById('admin-exit-btn');
-                if (ex2) ex2.classList.remove('hidden');
+                if (label) label.textContent = '@' + currentAdmin.user;
+                const adminContent = document.getElementById('tab-admin-content');
+                const onAdmin = adminContent && !adminContent.classList.contains('hidden');
+                if (typeof updateAdminHeaderChrome === 'function') updateAdminHeaderChrome(onAdmin);
                 if (typeof renderMyAnnouncements === 'function') renderMyAnnouncements();
                 if (typeof populateOtherAdminSelect === 'function') populateOtherAdminSelect();
                 if (typeof renderAdminProductsManage === 'function') renderAdminProductsManage();
