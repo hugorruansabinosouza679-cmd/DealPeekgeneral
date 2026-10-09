@@ -151,6 +151,13 @@
         }
         body.reduce-motion *,
         body.reduce-motion *::before,
+        .admin-nav-active {
+            background: rgba(234, 179, 8, 0.18) !important;
+            color: #ca8a04 !important;
+        }
+        body.dark-mode .admin-nav-active {
+            color: #eab308 !important;
+        }
         body.reduce-motion *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
@@ -428,7 +435,80 @@
             }
         }
 
-    </style>
+    
+        /* Adaptacao a tela e zoom do navegador */
+        html {
+            font-size: 21px;
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        #carousel-section .carousel-nav-btn {
+            pointer-events: auto;
+        }
+        #carousel-track > * {
+            flex: 0 0 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        #carousel-section img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        @media (max-width: 640px) {
+            #carousel-section {
+                margin-left: -0.25rem;
+                margin-right: -0.25rem;
+            }
+        }
+        /* Com zoom alto, evita cortar botoes do carrossel */
+        #carousel-section .relative {
+            min-height: 140px;
+        }
+
+        
+        #admin-sidebar.admin-sidebar-icons {
+            width: 3.5rem !important;
+        }
+        #admin-sidebar.admin-sidebar-icons .admin-nav-label {
+            display: none !important;
+        }
+        #admin-sidebar.admin-sidebar-expanded {
+            width: 11rem;
+        }
+        @media (max-width: 640px) {
+            #admin-sidebar.admin-sidebar-expanded {
+                width: 4rem;
+            }
+            #admin-sidebar.admin-sidebar-expanded .admin-nav-label {
+                display: none !important;
+            }
+            #admin-sidebar.admin-sidebar-icons .admin-nav-label {
+                display: none !important;
+            }
+        }
+        @media (min-width: 641px) {
+            #admin-sidebar.admin-sidebar-expanded .admin-nav-label {
+                display: inline !important;
+            }
+        }
+
+        
+        .admin-cfg-nav-active {
+            background: rgba(234, 179, 8, 0.18) !important;
+            color: #ca8a04 !important;
+        }
+        body.dark-mode .admin-cfg-nav-active {
+            color: #eab308 !important;
+        }
+
+        </style>
 </head>
 <body class="dark-mode min-h-screen flex flex-col antialiased selection:bg-brandYellow-500 selection:text-navy-900 font-normal">
 
@@ -573,18 +653,14 @@
         </div>
 
         <!-- CARROSSEL DE COMERCIAIS / ANÚNCIOS (ocupa todo o espaço, rola a cada 10s) -->
-        <div id="carousel-section" class="mb-8 hidden">
-            <div class="relative w-full overflow-hidden rounded-2xl border border-brandYellow-500/30 shadow-2xl bg-transparent dark:bg-slate-950/50 max-h-[360px] sm:max-h-[320px]">
-                <!-- Track que desliza -->
+        <div id="carousel-section" class="mb-6 sm:mb-8 hidden">
+            <div class="relative w-full rounded-2xl border border-brandYellow-500/30 shadow-2xl bg-transparent dark:bg-slate-950/50 overflow-hidden">
                 <div id="carousel-track" class="flex transition-transform duration-700 ease-in-out" style="transform: translateX(0%);">
-                    <!-- Slides injetados via JS -->
                 </div>
-
-                <!-- Setas de navegação -->
-                <button onclick="carouselPrev()" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 text-white flex items-center justify-center transition border border-white/20">
+                <button type="button" onclick="carouselPrev()" aria-label="Anterior" class="carousel-nav-btn absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/55 backdrop-blur-md hover:bg-black/70 text-white flex items-center justify-center border border-white/25 shadow-lg">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
                 </button>
-                <button onclick="carouselNext()" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 text-white flex items-center justify-center transition border border-white/20">
+                <button type="button" onclick="carouselNext()" aria-label="Proximo" class="carousel-nav-btn absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/55 backdrop-blur-md hover:bg-black/70 text-white flex items-center justify-center border border-white/25 shadow-lg">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                 </button>
             </div>
@@ -882,145 +958,185 @@
     <div id="settings-drawer" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-stretch justify-stretch">
         <div id="settings-drawer-card" class="relative w-full h-full bg-white dark:bg-darkcard flex flex-col shadow-2xl text-slate-800 dark:text-slate-100 overflow-hidden">
 
-            <!-- Drawer Header estilo celular + bolinha Admin -->
-            <div class="relative p-4 sm:p-5 border-b border-slate-200 dark:border-darkborder flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/40">
-                <div class="flex items-center gap-3">
-                    <button type="button" onclick="settingsBackArrow()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300" title="Voltar">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            <!-- Header fino -->
+            <div class="relative px-3 py-2 border-b border-slate-200 dark:border-darkborder flex items-center justify-between gap-2 bg-slate-50/80 dark:bg-slate-900/40 min-h-[48px]">
+                <div class="flex items-center gap-2 min-w-0">
+                    <button type="button" onclick="settingsBackArrow()" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 flex-shrink-0" title="Voltar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
                     </button>
-                    <div>
-                        <h3 id="settings-header-title" class="font-extrabold text-lg leading-tight">Ajustes</h3>
-                        <p id="settings-header-sub" class="text-[11px] text-slate-500 dark:text-slate-400">Preferências do DealPeek</p>
+                    <div class="min-w-0">
+                        <h3 id="settings-header-title" class="font-extrabold text-sm leading-tight truncate">Ajustes</h3>
+                        <p id="settings-header-sub" class="text-[10px] text-slate-500 dark:text-slate-400 truncate leading-tight">Preferências</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <!-- Bolinha Admin no canto superior direito -->
-                    <button type="button" id="tab-admin-btn" onclick="switchSettingsTab('admin')" class="w-10 h-10 rounded-full bg-slate-800 dark:bg-brandYellow-500 text-white dark:text-navy-900 shadow-lg flex items-center justify-center hover:scale-105 transition relative" title="Área Admin">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-darkcard"></span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <button type="button" id="admin-exit-btn" onclick="lockAdminMode()" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-red-500">Sair</button>
+                    <span id="current-admin-label" class="hidden text-[10px] font-bold text-brandYellow-500 max-w-[72px] truncate"></span>
+                    <button type="button" id="tab-admin-btn" onclick="switchSettingsTab('admin')" class="w-8 h-8 rounded-full bg-slate-800 dark:bg-brandYellow-500 text-white dark:text-navy-900 shadow flex items-center justify-center relative" title="Área Admin">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+                        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-white dark:border-darkcard"></span>
                     </button>
                     <button type="button" id="tab-pref-btn" onclick="switchSettingsTab('pref')" class="hidden" aria-hidden="true"></button>
-                    <button onclick="closeSettingsDrawer()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button type="button" onclick="closeSettingsDrawer()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
 
             <!-- Preferências estilo lista de celular -->
-            <div id="tab-pref-content" class="flex-grow overflow-y-auto bg-slate-100 dark:bg-[#0b0f17]">
-                <p class="px-4 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Aparência</p>
-                <div class="mx-3 mb-3 rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Modo escuro</h4></div>
-                        <label class="ios-switch"><input type="checkbox" id="dark-toggle" checked onchange="toggleDarkMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
-                    </div>
-                    <!-- Tamanho do texto — bem no topo, sempre visível -->
-                    <div id="font-size-block" class="px-4 py-4 bg-emerald-500/5 border-y border-emerald-500/20">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><span class="text-emerald-500 font-black text-xs">Aa</span></div>
-                            <h4 class="font-semibold text-sm flex-1">Tamanho do texto</h4>
-                            <span id="font-size-label" class="text-xs font-bold text-brandYellow-500">16px</span>
+                        <div id="tab-pref-content" class="flex-grow overflow-y-auto bg-slate-100 dark:bg-[#0b0f17]">
+                <div class="flex flex-col sm:flex-row gap-0 sm:gap-3 p-3 sm:p-4 min-h-full">
+                    <!-- Menu estilo Windows 11 -->
+                    <nav class="sm:w-48 flex-shrink-0 flex sm:flex-col gap-1 overflow-x-auto sm:overflow-visible pb-2 sm:pb-0">
+                        <button type="button" class="user-cfg-nav user-cfg-nav-active flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left whitespace-nowrap" data-ucfg="sistema" onclick="userShowCfg('sistema')">Sistema</button>
+                        <button type="button" class="user-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-ucfg="acessibilidade" onclick="userShowCfg('acessibilidade')">Acessibilidade</button>
+                        <button type="button" class="user-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-ucfg="personalizacao" onclick="userShowCfg('personalizacao')">Personalização</button>
+                        <button type="button" class="user-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-ucfg="conta" onclick="userShowCfg('conta')">Conta</button>
+                        <button type="button" class="user-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-ucfg="sobre" onclick="userShowCfg('sobre')">Sobre</button>
+                    </nav>
+                    <div class="flex-1 min-w-0 space-y-3">
+                        <!-- Sistema -->
+                        <div id="user-cfg-sistema" class="user-cfg-panel space-y-3">
+                            <div>
+                                <h2 class="text-base font-black text-slate-900 dark:text-white">Sistema</h2>
+                                <p class="text-[11px] text-slate-500">Aparência e desempenho</p>
+                            </div>
+                            <div class="rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg></div>
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Modo escuro</h4><p class="text-[10px] text-slate-400">Tema do site</p></div>
+                                    <label class="ios-switch"><input type="checkbox" id="dark-toggle" checked onchange="toggleDarkMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                                </div>
+                                <div id="font-size-block" class="px-4 py-4">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><span class="text-emerald-500 font-black text-xs">Aa</span></div>
+                                        <div class="flex-1"><h4 class="font-semibold text-sm">Tamanho do texto</h4><p class="text-[10px] text-slate-400">Padrão ao abrir: 21px</p></div>
+                                        <span id="font-size-label" class="text-xs font-bold text-brandYellow-500">21px</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-[10px] font-bold text-slate-400">12</span>
+                                        <input id="font-size-slider" type="range" min="12" max="36" step="1" value="21" class="font-size-slider flex-1 w-full" style="min-height:28px;accent-color:#eab308" oninput="onFontSizeSlider(this.value)">
+                                        <span class="text-sm font-bold text-slate-300">36</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="w-9 h-9 rounded-xl bg-rose-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/></svg></div>
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Reduzir animações</h4><p class="text-[10px] text-slate-400">Menos efeitos (celular lento)</p></div>
+                                    <label class="ios-switch"><input type="checkbox" id="pref-reduce-motion" onchange="toggleReduceMotion(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] font-bold text-slate-400">A</span>
-                            <input id="font-size-slider" type="range" min="10" max="40" step="1" value="16" class="font-size-slider flex-1 w-full" style="min-height:28px;accent-color:#eab308" oninput="onFontSizeSlider(this.value)">
-                            <span class="text-base font-bold text-slate-300">A</span>
+                        <!-- Acessibilidade -->
+                        <div id="user-cfg-acessibilidade" class="user-cfg-panel hidden space-y-3">
+                            <div>
+                                <h2 class="text-base font-black">Acessibilidade</h2>
+                                <p class="text-[11px] text-slate-500">Leitura e toque mais fáceis</p>
+                            </div>
+                            <div class="rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg></div>
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Acessibilidades</h4><p class="text-[10px] text-slate-400">Texto e botões maiores</p></div>
+                                    <label class="ios-switch"><input type="checkbox" id="elder-toggle" onchange="toggleElderMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                                </div>
+                                <div id="a11y-extra-options" class="hidden">
+                                    <div id="proto-option-row" class="hidden flex items-center gap-3 px-4 py-3.5">
+                                        <div class="w-9 h-9 rounded-xl bg-rose-500/15 flex items-center justify-center flex-shrink-0"></div>
+                                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Modo protótipo</h4></div>
+                                        <label class="ios-switch"><input type="checkbox" id="proto-toggle" onchange="toggleProtoMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-2 text-center">Arraste para aumentar ou diminuir a letra</p>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Acessibilidades</h4><p class="text-[10px] text-slate-400">Texto e botões maiores</p></div>
-                        <label class="ios-switch"><input type="checkbox" id="elder-toggle" onchange="toggleElderMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
-                    </div>
-                    <div id="a11y-extra-options" class="hidden">
-                        <div id="proto-option-row" class="hidden flex items-center gap-3 px-4 py-3.5 bg-rose-500/5">
-                            <div class="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5"/></svg></div>
-                            <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Modo protótipo</h4></div>
-                            <label class="ios-switch"><input type="checkbox" id="proto-toggle" onchange="toggleProtoMode(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                        <!-- Personalização -->
+                        <div id="user-cfg-personalizacao" class="user-cfg-panel hidden space-y-3">
+                            <div>
+                                <h2 class="text-base font-black">Personalização</h2>
+                                <p class="text-[11px] text-slate-500">Vitrine e preferências</p>
+                            </div>
+                            <div class="rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Produtos por linha</h4></div>
+                                    <select id="pref-grid-cols" onchange="setGridCols(this.value); savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5" selected>5</option>
+                                        <option value="6">6</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Velocidade do carrossel</h4></div>
+                                    <select id="pref-carousel-speed" onchange="setCarouselSpeed(this.value); savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
+                                        <option value="5000">5 s</option>
+                                        <option value="8000">8 s</option>
+                                        <option value="10000" selected>10 s</option>
+                                        <option value="15000">15 s</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Idioma</h4></div>
+                                    <select id="pref-lang" onchange="savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
+                                        <option value="pt-BR">Português</option>
+                                        <option value="en">English</option>
+                                        <option value="es">Español</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Moeda</h4></div>
+                                    <select id="pref-currency" onchange="savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
+                                        <option value="BRL">R$ Real</option>
+                                        <option value="USD">US$ Dólar</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3 px-4 py-3.5">
+                                    <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Notificações de ofertas</h4><p class="text-[10px] text-slate-400">Avisos no sino</p></div>
+                                    <label class="ios-switch"><input type="checkbox" id="pref-notif" checked onchange="savePrefs()"><span class="ios-slider"></span></label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Produtos por linha</h4></div>
-                        <select id="pref-grid-cols" onchange="setGridCols(this.value); savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5" selected>5</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-sky-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Velocidade do carrossel</h4></div>
-                        <select id="pref-carousel-speed" onchange="setCarouselSpeed(this.value); savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
-                            <option value="5000">5 s</option>
-                            <option value="10000" selected>10 s</option>
-                            <option value="15000">15 s</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-pink-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Reduzir animações</h4><p class="text-[10px] text-slate-400">Desliga efeitos e transições (melhor p/ tontura / celular lento)</p></div>
-                        <label class="ios-switch"><input type="checkbox" id="pref-reduce-motion" onchange="toggleReduceMotion(this.checked); savePrefs()"><span class="ios-slider"></span></label>
+                        <!-- Conta -->
+                        <div id="user-cfg-conta" class="user-cfg-panel hidden space-y-3">
+                            <div>
+                                <h2 class="text-base font-black">Conta</h2>
+                                <p class="text-[11px] text-slate-500">Seu perfil no DealPeek</p>
+                            </div>
+                            <div class="rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                <button type="button" onclick="openEditProfileModal && openEditProfileModal()" class="w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                                    <div class="flex-1"><h4 class="font-semibold text-sm">Editar perfil</h4><p class="text-[10px] text-slate-400">Nome e foto</p></div>
+                                    <span class="text-slate-400">›</span>
+                                </button>
+                                <button type="button" onclick="openBugReportModal && openBugReportModal()" class="w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                                    <div class="flex-1"><h4 class="font-semibold text-sm">Relatar bugs ou sugerir melhorias</h4><p class="text-[10px] text-slate-400">Fale com o criador</p></div>
+                                    <span class="text-slate-400">›</span>
+                                </button>
+                                <button type="button" onclick="copySiteLink && copySiteLink()" class="w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                                    <div class="flex-1"><h4 class="font-semibold text-sm">Compartilhar DealPeek</h4><p class="text-[10px] text-slate-400">Copiar link do site</p></div>
+                                    <span class="text-slate-400">›</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Sobre -->
+                        <div id="user-cfg-sobre" class="user-cfg-panel hidden space-y-3">
+                            <div>
+                                <h2 class="text-base font-black">Sobre</h2>
+                                <p class="text-[11px] text-slate-500">DealPeek General</p>
+                            </div>
+                            <div class="rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder p-4 space-y-2">
+                                <p class="text-sm font-bold">DealPeek General</p>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">Curadoria de promoções e afiliados. Peek. Buy. Smile.</p>
+                                <p class="text-[10px] text-slate-500">ESC na tela inicial pergunta se deseja sair.</p>
+                            </div>
+                            <button type="button" onclick="confirmExitSite && confirmExitSite()" class="w-full rounded-2xl bg-white dark:bg-darkcard border border-red-500/30 px-4 py-3.5 text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition">
+                                <h4 class="font-semibold text-sm text-red-500">Sair do DealPeek</h4>
+                                <p class="text-[10px] text-slate-400">Fecha o site</p>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <p class="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Geral</p>
-                <div class="mx-3 mb-3 rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0"><span class="text-blue-400 font-black text-[10px]">PT</span></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Idioma</h4></div>
-                        <select id="pref-lang" onchange="savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
-                            <option value="pt-BR" selected>Português</option>
-                            <option value="en">English</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0"><span class="text-green-500 font-black text-[10px]">R$</span></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Moeda</h4></div>
-                        <select id="pref-currency" onchange="savePrefs()" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
-                            <option value="BRL" selected>R$ Real</option>
-                            <option value="USD">US$ Dólar</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-3 px-4 py-3.5">
-                        <div class="w-8 h-8 rounded-lg bg-yellow-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Notificações de ofertas</h4></div>
-                        <label class="ios-switch"><input type="checkbox" id="pref-notif" checked onchange="savePrefs()"><span class="ios-slider"></span></label>
-                    </div>
-                    <button type="button" onclick="shareDealPeekLink()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                        <div class="w-8 h-8 rounded-lg bg-brandYellow-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-brandYellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Compartilhar DealPeek</h4><p class="text-[10px] text-slate-400">Copiar link do site</p></div>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                    </button>
-                    <button type="button" onclick="openBuyHistory()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                        <div class="w-8 h-8 rounded-lg bg-cyan-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Histórico de cliques em Comprar</h4><p class="text-[10px] text-slate-400">Só neste aparelho</p></div>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                    </button>
-                    <button type="button" onclick="openBugReportModal()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                        <div class="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm">Relatar bugs ou sugerir melhorias</h4><p class="text-[10px] text-slate-400">Envie feedback para o DealPeek</p></div>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                    </button>
-                </div>
-
-                <p class="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Dados</p>
-                <div class="mx-3 mb-6 rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder overflow-hidden">
-                    <button type="button" onclick="clearLocalData()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition">
-                        <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm text-red-500">Limpar dados locais</h4><p class="text-[10px] text-slate-400">Carrinho, preferências e cache deste navegador</p></div>
-                    </button>
-                    <button type="button" onclick="requestExitDealPeek()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition border-t border-slate-100 dark:border-slate-800">
-                        <div class="w-8 h-8 rounded-lg bg-red-600/20 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg></div>
-                        <div class="flex-1 min-w-0"><h4 class="font-semibold text-sm text-red-500">Sair do DealPeek</h4><p class="text-[10px] text-slate-400">Fecha o site e o servidor (CMD)</p></div>
-                    </button>
-                </div>
-                <p class="text-center text-[10px] text-slate-500 pb-6">ESC na tela inicial também pergunta se deseja sair · bolinha = Admin</p>
             </div>
 
             <!-- Tab Content: Protected Admin Area -->
+<!-- Tab Content: Protected Admin Area -->
             <div id="tab-admin-content" class="hidden flex-grow overflow-y-auto bg-slate-100 dark:bg-[#0b0f17]">
                 
                 <!-- Locked: login ou criar admin -->
@@ -1087,158 +1203,360 @@
                 </div>
 
                 <!-- Unlocked Admin Dashboard -->
-                <div id="admin-unlocked-view" class="hidden pb-8">
-                    <!-- Status bar -->
-                    <div class="sticky top-0 z-10 px-4 py-3 bg-white/90 dark:bg-darkcard/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="relative flex h-2.5 w-2.5">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Online</p>
-                                <p class="text-xs font-extrabold text-slate-800 dark:text-slate-100 truncate">@<span id="current-admin-label"></span></p>
-                            </div>
-                        </div>
-                        <button type="button" onclick="lockAdminMode(); switchSettingsTab('pref')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition">Sair</button>
-                    </div>
+                                <div id="admin-unlocked-view" class="hidden h-full flex flex-col">
+                    <div class="flex-1 flex min-h-0 overflow-hidden">
+                        <!-- Sidebar -->
+                        <nav id="admin-sidebar" class="admin-sidebar-expanded w-[64px] sm:w-44 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0f141f] overflow-y-auto py-2 flex flex-col gap-0.5 px-1.5 transition-all duration-200">
+                            <button type="button" onclick="toggleAdminSidebar()" class="flex items-center justify-center sm:justify-start gap-2 px-2 py-2 mb-1 rounded-xl text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition" title="Menu">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                                <span class="admin-nav-label hidden sm:inline text-[10px] font-bold">Menu</span>
+                            </button>
+                            <button type="button" data-admin-nav="geral" onclick="adminShowSection('geral')" class="admin-nav-btn admin-nav-active flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Geral</span>
+                            </button>
+                            <button type="button" data-admin-nav="produtos" onclick="adminShowSection('produtos')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Produtos</span>
+                            </button>
+                            <button type="button" data-admin-nav="publicar" onclick="adminShowSection('publicar')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Publicar</span>
+                            </button>
+                            <button type="button" data-admin-nav="cliques" onclick="adminShowSection('cliques')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Desempenho</span>
+                            </button>
+                            <button type="button" data-admin-nav="membros" onclick="adminShowSection('membros')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Membros</span>
+                            </button>
+                            <button type="button" data-admin-nav="mensagens" onclick="adminShowSection('mensagens')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition relative">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Msgs</span>
+                                <span id="admin-msg-badge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black items-center justify-center">0</span>
+                            </button>
+                            <button type="button" data-admin-nav="notificacoes" onclick="adminShowSection('notificacoes')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Avisos</span>
+                            </button>
+                            <button type="button" data-admin-nav="config" onclick="adminShowSection('config')" class="admin-nav-btn flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brandYellow-500/15 transition mt-auto">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span class="admin-nav-label leading-tight text-center sm:text-left">Config</span>
+                            </button>
+                        </nav>
 
-                    <div class="p-4 space-y-5">
-                        <!-- Resumo no TOPO -->
-                        <div>
-                            <p class="px-1 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Resumo</p>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div class="bg-white dark:bg-darkcard p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
-                                    <span id="admin-metric-deals" class="block text-xl font-black text-brandYellow-500">0</span>
-                                    <span class="text-[10px] text-slate-500 uppercase font-bold">Ofertas</span>
-                                </div>
-                                <div class="bg-white dark:bg-darkcard p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
-                                    <span id="admin-metric-members" class="block text-xl font-black text-emerald-500">0</span>
-                                    <span class="text-[10px] text-slate-500 uppercase font-bold">Membros</span>
-                                </div>
-                                <div class="bg-white dark:bg-darkcard p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
-                                    <span id="admin-metric-sales" class="block text-xl font-black text-blue-500">0</span>
-                                    <span class="text-[10px] text-slate-500 uppercase font-bold">Cliques compra</span>
-                                </div>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-2 px-1">Vendas = quantas vezes alguém clicou em Comprar no site.</p>
-                        </div>
+                        <!-- Content -->
+                        <div class="flex-1 overflow-y-auto p-3 sm:p-4 bg-slate-100 dark:bg-[#0b0f17]">
 
-                        <!-- Atalhos -->
-                        <div>
-                            <p class="px-1 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Atalhos</p>
-                            <div class="space-y-2">
-                                <button type="button" onclick="openMyPublishedPanel()" class="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-darkcard border border-brandYellow-500/40 shadow-sm text-left hover:bg-brandYellow-500/10 transition">
-                                    <div class="w-11 h-11 rounded-xl bg-brandYellow-500 text-navy-900 flex items-center justify-center shadow-md flex-shrink-0">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="font-extrabold text-sm">Meus produtos e anúncios</p>
-                                        <p class="text-[11px] text-slate-400">Editar · Pausar · Excluir</p>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="document.getElementById('admin-publish-section').scrollIntoView({behavior:'smooth',block:'start'})" class="w-full flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition text-left">
-                                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                                    </div>
-                                    <span class="font-bold text-sm">Publicar novo produto / anúncio</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Configurações admin (no lugar do cadeado / só no painel) -->
-                        <div id="admin-settings-panel" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkcard p-4 space-y-3 shadow-sm">
-                            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Configurações admin</p>
-                            <button type="button" onclick="openAdminCredsModal()" class="w-full text-left px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800">Alterar usuário / senha do painel</button>
-                            <button type="button" onclick="openOtherAdminConnectModal()" class="w-full text-left px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800">Conectar a outro admin</button>
-                            <div id="admin-pending-list-wrap" class="hidden">
-                                <p class="text-[10px] font-bold text-amber-500 mt-2">Pedidos de admin (aguardando você)</p>
-                                <div id="admin-pending-list" class="space-y-2 mt-1"></div>
-                            </div>
-                        </div>
-
-                        <!-- Backup de produtos -->
-                        <div>
-                            <p class="px-1 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Backup dos produtos</p>
-                            <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkcard p-4 space-y-3 shadow-sm">
-                                <p id="pc-save-status" class="text-[11px] text-slate-500 leading-relaxed">Baixe um backup. Se der erro, importe e os produtos voltam.</p>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" onclick="downloadBackupToPc()" class="py-2.5 px-1 rounded-xl text-[11px] font-bold bg-brandYellow-500 text-navy-900 hover:bg-brandYellow-400">Baixar backup</button>
-                                    <label class="py-2.5 px-1 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700">
-                                        Importar backup
-                                        <input type="file" accept="application/json,.json" class="hidden" onchange="importBackupFromFile(event)">
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sugestões (dono) -->
-                        <div id="admin-suggestions-panel" class="hidden space-y-2">
-                            <div class="flex items-center justify-between px-1">
-                                <p class="text-[11px] font-bold uppercase tracking-wider text-brandYellow-500">Sugestões e correções</p>
-                                <button type="button" onclick="renderAdminSuggestionsPanel()" class="text-[10px] font-bold text-slate-400 hover:text-brandYellow-500">Atualizar</button>
-                            </div>
-                            <p class="text-[10px] text-slate-500 px-1">Só você vê (hugorruansabinosouza679@gmail.com)</p>
-                            <div id="admin-suggestions-list" class="max-h-64 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 p-2 bg-white dark:bg-darkcard shadow-sm"></div>
-                        </div>
-
-                        <!-- Publicar -->
-                        <div id="admin-publish-section" class="space-y-3">
-                            <p class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Publicar produto / anúncio</p>
-                            <form id="admin-add-form" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-darkcard p-4 space-y-3 shadow-sm" onsubmit="return false;">
+                            <!-- GERAL -->
+                            <div id="admin-sec-geral" class="admin-sec space-y-4">
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5">Nome do produto *</label>
-                                    <input id="prod-title" type="text" placeholder="Ex: Fone Bluetooth Pro" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                    <h2 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">Bem-vindo(a) de volta</h2>
+                                    <p class="text-[11px] text-slate-500">Resumo do DealPeek · ofertas e cliques em compra</p>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-sm">
+                                        <p class="text-[10px] font-bold uppercase text-slate-400">Ofertas</p>
+                                        <p id="admin-metric-deals" class="text-2xl font-black text-brandYellow-500 mt-1">0</p>
+                                    </div>
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-sm">
+                                        <p class="text-[10px] font-bold uppercase text-slate-400">Membros</p>
+                                        <p id="admin-metric-members" class="text-2xl font-black text-emerald-500 mt-1">0</p>
+                                    </div>
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-sm">
+                                        <p class="text-[10px] font-bold uppercase text-slate-400">Compras (toque)</p>
+                                        <p id="admin-metric-sales" class="text-2xl font-black text-blue-500 mt-1">0</p>
+                                        <p class="text-[9px] text-slate-400 mt-0.5">Toques em Comprar</p>
+                                    </div>
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-sm">
+                                        <p class="text-[10px] font-bold uppercase text-slate-400">Admins</p>
+                                        <p id="admin-metric-admins" class="text-2xl font-black text-violet-500 mt-1">0</p>
+                                    </div>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-2 mb-3">
+                                        <div>
+                                            <p class="text-sm font-black text-slate-900 dark:text-white">Desempenho da semana</p>
+                                            <p class="text-[10px] text-slate-400">Quantas vezes alguém tocou em Comprar</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p id="admin-chart-total" class="text-lg font-black text-brandYellow-500 leading-none">0</p>
+                                            <p class="text-[9px] text-slate-400 mt-0.5">nos últimos 7 dias</p>
+                                        </div>
+                                    </div>
+                                    <div id="admin-clicks-chart" class="flex items-end justify-between gap-1.5 h-28 px-1" role="img" aria-label="Grafico de desempenho"></div>
+                                    <div id="admin-chart-labels" class="flex justify-between gap-1.5 text-[9px] text-slate-400 mt-2 px-1"></div>
+                                    <p class="text-[10px] text-slate-400 mt-3 text-center">Cada barra = um dia · amarelo = teve compra · cinza = zero</p>
+                                </div>
+                                <div class="grid sm:grid-cols-2 gap-3">
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                                        <p class="text-[11px] font-bold uppercase text-slate-400 mb-3">Ações rápidas</p>
+                                        <div class="space-y-2">
+                                            <button type="button" onclick="adminShowSection('publicar')" class="w-full py-2.5 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-sm">Publicar produto</button>
+                                            <button type="button" onclick="adminShowSection('produtos')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-sm">Gerenciar produtos</button>
+                                            <button type="button" onclick="adminShowSection('mensagens')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-sm">Ver mensagens</button>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
+                                        <button type="button" onclick="downloadBackupToPc()" class="w-full py-3 rounded-xl text-sm font-extrabold bg-brandYellow-500 text-navy-900">Backup</button>
+                                        <p id="pc-save-status" class="hidden text-[10px] text-slate-500">—</p>
+                                        <div class="pt-1 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                                            <p class="text-[11px] font-bold uppercase text-slate-400">Avisos</p>
+                                            <input id="admin-geral-notif-title" type="text" placeholder="Título do aviso" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                            <textarea id="admin-geral-notif-body" rows="2" placeholder="Mensagem" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-brandYellow-500 resize-none"></textarea>
+                                            <button type="button" onclick="addAdminNotificationFromGeral()" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs">Publicar aviso</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PRODUTOS -->
+                            <div id="admin-sec-produtos" class="admin-sec hidden space-y-3">
+                                <div class="flex items-center justify-between gap-2">
                                     <div>
-                                        <label class="block text-[11px] font-bold text-slate-500 mb-1.5">Preço (R$) *</label>
-                                        <input id="prod-price" type="number" step="0.01" placeholder="199,90" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                        <h2 class="text-base font-black">Produtos e anúncios</h2>
+                                        <p class="text-[11px] text-slate-500">Editar · pausar · excluir os seus itens</p>
                                     </div>
-                                    <div>
-                                        <label class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1.5">Promo (opcional)</label>
-                                        <input id="prod-promo" type="text" inputmode="decimal" placeholder="Ex: 149,90" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <button type="button" onclick="adminShowSection('publicar')" class="px-3 py-2 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">Novo</button>
+                                </div>
+                                <div id="admin-dash-products-list" class="space-y-2"></div>
+                            </div>
+
+                            <!-- PUBLICAR -->
+                            <div id="admin-sec-publicar" class="admin-sec hidden space-y-3">
+                                <div>
+                                    <h2 class="text-base font-black">Publicar produto / anúncio</h2>
+                                    <p class="text-[11px] text-slate-500">Visível para todos no site</p>
+                                </div>
+                                <div id="admin-publish-section" class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-sm">
+                                    <form id="admin-add-form" onsubmit="event.preventDefault()" class="space-y-3">
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Título *</label>
+                                            <input id="prod-title" type="text" required placeholder="Nome do produto" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Preço (R$) *</label>
+                                                <p class="text-[10px] text-slate-400 mb-1">Ex: 199,90 — o site formata</p>
+                                                <input id="prod-price" type="text" inputmode="decimal" placeholder="199,90" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-bold text-emerald-600 mb-1">Promo (opcional)</label>
+                                                <p class="text-[10px] text-slate-400 mb-1">Ex: 149,90</p>
+                                                <input id="prod-promo" type="text" inputmode="decimal" placeholder="149,90" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Selo / badge</label>
+                                            <input id="prod-badge" type="text" placeholder="Ex: Frete grátis" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Termina em (opcional)</label>
+                                            <input id="prod-ends-in" type="text" placeholder="Ex: 2 dias" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Link afiliado *</label>
+                                            <input id="prod-affiliate-url" type="url" required placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">URL da imagem (opcional)</label>
+                                            <input id="prod-img-url" type="url" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Ou envie PNG/JPG</label>
+                                            <input id="prod-file-png" type="file" accept="image/*" onchange="previewPngFile(event)" class="w-full text-xs">
+                                            <div id="png-preview-container" class="hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                                <img id="png-preview-img" src="" alt="Preview" class="h-24 w-24 object-contain mx-auto rounded-xl">
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="editing-product-id" value="">
+                                        <div class="grid grid-cols-3 gap-2 pt-1">
+                                            <button type="button" onclick="publishItem('product')" class="py-2.5 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">Produto</button>
+                                            <button type="button" onclick="publishItem('announcement')" class="py-2.5 rounded-xl bg-blue-600 text-white font-extrabold text-xs">Anúncio</button>
+                                            <button type="button" onclick="publishItem('both')" class="py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs">Os dois</button>
+                                        </div>
+                                    </form>
+                                    <div id="admin-preview-box" class="hidden"></div>
+                                </div>
+                            </div>
+
+                            <!-- CLIQUES -->
+                            <div id="admin-sec-cliques" class="admin-sec hidden space-y-3">
+                                <div>
+                                    <h2 class="text-base font-black">Desempenho</h2>
+                                    <p class="text-[11px] text-slate-500">Histórico de toques no botão Comprar (interesse real nas ofertas)</p>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-2 mb-3">
+                                        <div>
+                                            <p class="text-sm font-black">Últimos 7 dias</p>
+                                            <p class="text-[10px] text-slate-400">Mesmo gráfico da tela Geral</p>
+                                        </div>
+                                        <p id="admin-chart-total-2" class="text-lg font-black text-brandYellow-500">0</p>
+                                    </div>
+                                    <div id="admin-clicks-chart-2" class="flex items-end justify-between gap-1.5 h-28 px-1"></div>
+                                    <div id="admin-chart-labels-2" class="flex justify-between gap-1.5 text-[9px] text-slate-400 mt-2 px-1"></div>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase text-slate-400 mb-2">Histórico recente</p>
+                                    <div id="admin-dash-clicks-list" class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3 space-y-2 text-xs max-h-80 overflow-y-auto"></div>
+                                </div>
+                            </div>
+
+                            <!-- MEMBROS -->
+                            <div id="admin-sec-membros" class="admin-sec hidden space-y-3">
+                                <h2 class="text-base font-black">Membros do site</h2>
+                                <div id="admin-dash-members-list" class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden"></div>
+                            </div>
+
+                            <!-- MENSAGENS -->
+                            <div id="admin-sec-mensagens" class="admin-sec hidden space-y-3">
+                                <h2 class="text-base font-black">Mensagens e feedback</h2>
+                                <p class="text-[11px] text-slate-500">Bugs, sugestões e pedidos de admin</p>
+                                <div id="admin-suggestions-panel" class="space-y-2">
+                                    <div id="admin-suggestions-list" class="space-y-2"></div>
+                                </div>
+                                <div id="admin-pending-list-wrap" class="hidden">
+                                    <p class="text-[11px] font-bold text-amber-500">Pedidos de conta admin</p>
+                                    <div id="admin-pending-list" class="space-y-2 mt-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- CONFIG (só admin — sem perfil do site) -->
+                                                        <div id="admin-sec-notificacoes" class="admin-sec hidden space-y-3">
+                                <div>
+                                    <h2 class="text-base font-black">Avisos / Notificações</h2>
+                                    <p class="text-[11px] text-slate-500">Publicar no sino do site para todos os visitantes</p>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-sm">
+                                    <input id="admin-menu-notif-title" type="text" placeholder="Título do aviso" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                    <textarea id="admin-menu-notif-body" rows="3" placeholder="Mensagem" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500 resize-none"></textarea>
+                                    <button type="button" onclick="addAdminNotificationFromMenu()" class="w-full py-3 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-sm">Publicar notificação</button>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+                                    <p class="text-[11px] font-bold uppercase text-slate-400 mb-2">Publicadas</p>
+                                    <div id="admin-menu-notif-list" class="space-y-2 text-xs max-h-56 overflow-y-auto"></div>
+                                </div>
+                            </div>
+
+<div id="admin-sec-config" class="admin-sec hidden space-y-3">
+                                <div>
+                                    <h2 class="text-base font-black">Configurações</h2>
+                                    <p class="text-[11px] text-slate-500">Painel do Admin · estilo menu de sistema</p>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3 min-h-[320px]">
+                                    <!-- Menu lateral estilo Win11 -->
+                                    <nav class="sm:w-44 flex-shrink-0 flex sm:flex-col gap-1 overflow-x-auto sm:overflow-visible pb-1">
+                                        <button type="button" class="admin-cfg-nav admin-cfg-nav-active flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left whitespace-nowrap" data-cfg="conta" onclick="adminShowCfg('conta')">Conta</button>
+                                        <button type="button" class="admin-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-cfg="dados" onclick="adminShowCfg('dados')">Dados e backup</button>
+                                        <button type="button" class="admin-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-cfg="notificacoes" onclick="adminShowCfg('notificacoes')">Notificações</button>
+                                        <button type="button" class="admin-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-cfg="site" onclick="adminShowCfg('site')">Site e vitrine</button>
+                                        <button type="button" class="admin-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-cfg="seguranca" onclick="adminShowCfg('seguranca')">Segurança</button>
+                                        <button type="button" class="admin-cfg-nav flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 whitespace-nowrap" data-cfg="avancado" onclick="adminShowCfg('avancado')">Avançado</button>
+                                    </nav>
+                                    <div class="flex-1 space-y-3 min-w-0">
+                                        <!-- Conta -->
+                                        <div id="admin-cfg-conta" class="admin-cfg-panel space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <button type="button" onclick="openAdminCredsModal()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Usuário e senha do painel</p>
+                                                    <p class="text-[11px] text-slate-400">Alterar login desta conta admin</p>
+                                                </button>
+                                                <button type="button" onclick="openOtherAdminConnectModal()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Conectar a outro admin</p>
+                                                    <p class="text-[11px] text-slate-400">Abrir produtos de outra conta</p>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Dados -->
+                                        <div id="admin-cfg-dados" class="admin-cfg-panel hidden space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <button type="button" onclick="downloadBackupToPc()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Baixar backup dos produtos</p>
+                                                    <p class="text-[11px] text-slate-400">Arquivo JSON no seu PC</p>
+                                                </button>
+                                                <label class="block w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition cursor-pointer">
+                                                    <p class="text-sm font-bold">Importar backup</p>
+                                                    <p class="text-[11px] text-slate-400">Restaurar produtos de um arquivo</p>
+                                                    <input type="file" accept="application/json,.json" class="hidden" onchange="importBackupFromFile(event)">
+                                                </label>
+                                                <button type="button" onclick="if(typeof saveToDatabaseFolderNow==='function')saveToDatabaseFolderNow(); if(typeof showSiteToast==='function')showSiteToast('Sincronizando com a nuvem…','info');" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Sincronizar nuvem agora</p>
+                                                    <p class="text-[11px] text-slate-400">Força envio dos dados ao Supabase</p>
+                                                </button>
+                                            </div>
+                                            <button type="button" onclick="adminShowSection('notificacoes')" class="w-full text-left px-4 py-3.5 rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                <p class="text-sm font-bold">Enviar notificações</p>
+                                                <p class="text-[11px] text-slate-400">Abre o menu Avisos do Admin</p>
+                                            </button>
+                                        </div>
+                                        <!-- Notificações tab -->
+                                        <div id="admin-cfg-notificacoes" class="admin-cfg-panel hidden space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3">
+                                                <p class="text-sm font-black">Nova notificação no site</p>
+                                                <input id="admin-notif-title-2" type="text" placeholder="Título" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                                <textarea id="admin-notif-body-2" rows="3" placeholder="Mensagem completa" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none"></textarea>
+                                                <button type="button" onclick="addAdminNotificationFromConfig(true)" class="w-full py-2.5 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-sm">Enviar</button>
+                                            </div>
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 p-3">
+                                                <p class="text-[11px] font-bold text-slate-400 mb-2">Últimas enviadas</p>
+                                                <div id="admin-cfg-notif-list" class="space-y-2 text-xs max-h-40 overflow-y-auto"></div>
+                                            </div>
+                                        </div>
+                                        <!-- Site -->
+                                        <div id="admin-cfg-site" class="admin-cfg-panel hidden space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <div class="px-4 py-3.5 flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p class="text-sm font-bold">Pausar todas as minhas ofertas</p>
+                                                        <p class="text-[11px] text-slate-400">Oculta produtos deste admin na vitrine</p>
+                                                    </div>
+                                                    <button type="button" onclick="adminPauseAllMine(true)" class="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800">Pausar</button>
+                                                </div>
+                                                <div class="px-4 py-3.5 flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p class="text-sm font-bold">Reativar minhas ofertas</p>
+                                                        <p class="text-[11px] text-slate-400">Volta a mostrar na vitrine</p>
+                                                    </div>
+                                                    <button type="button" onclick="adminPauseAllMine(false)" class="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-600">Reativar</button>
+                                                </div>
+                                                <div class="px-4 py-3.5 flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p class="text-sm font-bold">Velocidade do carrossel</p>
+                                                        <p class="text-[11px] text-slate-400">Tempo entre anúncios</p>
+                                                    </div>
+                                                    <select id="admin-cfg-carousel" onchange="setCarouselSpeed(this.value); savePrefs();" class="text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 border-0 px-2 py-1.5">
+                                                        <option value="5000">5 s</option>
+                                                        <option value="8000">8 s</option>
+                                                        <option value="10000" selected>10 s</option>
+                                                        <option value="15000">15 s</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Segurança -->
+                                        <div id="admin-cfg-seguranca" class="admin-cfg-panel hidden space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <button type="button" onclick="lockAdminMode()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold text-red-500">Sair do painel Admin</p>
+                                                    <p class="text-[11px] text-slate-400">Encerra a sessão admin neste dispositivo</p>
+                                                </button>
+                                                <div class="px-4 py-3.5">
+                                                    <p class="text-sm font-bold">Sessão atual</p>
+                                                    <p class="text-[11px] text-slate-400 mt-1">Admin logado: <span id="admin-cfg-session-user">—</span></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Avançado -->
+                                        <div id="admin-cfg-avancado" class="admin-cfg-panel hidden space-y-2">
+                                            <div class="bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                                                <button type="button" onclick="adminClearBuyHistory()" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Zerar histórico de compras (cliques)</p>
+                                                    <p class="text-[11px] text-slate-400">Limpa o gráfico de desempenho</p>
+                                                </button>
+                                                <button type="button" onclick="if(typeof updateAdminMetrics==='function')updateAdminMetrics(); if(typeof renderAdminClicksChart==='function')renderAdminClicksChart(); if(typeof showSiteToast==='function')showSiteToast('Métricas atualizadas.','success');" class="w-full text-left px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+                                                    <p class="text-sm font-bold">Atualizar métricas agora</p>
+                                                    <p class="text-[11px] text-slate-400">Recarrega números do painel</p>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5">Selo</label>
-                                    <input id="prod-badge" type="text" placeholder="Ex: -30%, Destaque ML" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1.5">Tempo da oferta</label>
-                                    <input id="prod-ends-in" type="text" placeholder="Ex: 30m, 2h, 1d" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-brandYellow-600 dark:text-brandYellow-500 mb-1.5">Link de afiliado</label>
-                                    <p class="text-[10px] text-slate-500 mb-1.5">ML, Amazon, Shopee, Magalu… Conteúdo +18 é bloqueado.</p>
-                                    <input id="prod-affiliate-url" type="url" placeholder="https://…" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-brandYellow-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5">Imagem (1:1)</label>
-                                    <input id="prod-file-png" type="file" accept="image/png, image/jpeg, image/webp" onchange="previewPngFile(event)" class="w-full text-xs text-slate-400 file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brandYellow-500 file:text-navy-900 hover:file:bg-brandYellow-400 cursor-pointer">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5">Ou URL da imagem</label>
-                                    <input id="prod-img-url" type="text" placeholder="https://exemplo.com/foto.png" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
-                                </div>
-                                <div id="png-preview-container" class="hidden p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                                    <span class="text-[10px] uppercase font-bold text-slate-500 block mb-2">Pré-visualização</span>
-                                    <img id="png-preview-img" src="" alt="Preview" class="h-24 w-24 object-contain mx-auto rounded-xl">
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                                    <button type="button" onclick="previewProductCard()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-extrabold py-3 px-2 rounded-xl text-xs transition active:scale-[0.98]">
-                                        Pré-visualizar
-                                    </button>
-                                    <button type="button" onclick="publishItem('product')" class="w-full bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 text-white font-extrabold py-3 px-2 rounded-xl text-xs transition active:scale-[0.98]">
-                                        Só produto
-                                    </button>
-                                    <button type="button" onclick="publishItem('both')" class="w-full bg-brandYellow-500 hover:bg-brandYellow-400 text-navy-900 font-extrabold py-3 px-2 rounded-xl text-xs transition shadow-md active:scale-[0.98]">
-                                        Produto + anúncio
-                                    </button>
-                                </div>
-                                <div id="admin-preview-box" class="hidden mt-2 p-2 border border-dashed border-blue-500/50 rounded-xl"></div>
-                                <input type="hidden" id="editing-product-id" value="">
-                            </form>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -2094,6 +2412,7 @@
             // Default theme is dark + preferências salvas
             toggleDarkMode(true);
             if (typeof loadPrefs === 'function') loadPrefs();
+            if (typeof setFontSize === 'function') setFontSize(21);
             if (typeof restoreUserSession === 'function') restoreUserSession();
             if (typeof loadUserCloudNow === 'function' && currentUser && currentUser.email) {
                 try { await loadUserCloudNow(); } catch (e) {}
@@ -2548,13 +2867,315 @@
             window.open(url, '_blank');
         }
 
-        function updateAdminMetrics() {
+        
+        
+        let adminSidebarExpanded = true;
+        function toggleAdminSidebar() {
+            const nav = document.getElementById('admin-sidebar');
+            if (!nav) return;
+            adminSidebarExpanded = !adminSidebarExpanded;
+            nav.classList.toggle('admin-sidebar-expanded', adminSidebarExpanded);
+            nav.classList.toggle('admin-sidebar-icons', !adminSidebarExpanded);
+            try { localStorage.setItem('dp_admin_sidebar', adminSidebarExpanded ? '1' : '0'); } catch (e) {}
+        }
+        function restoreAdminSidebarState() {
+            try {
+                const v = localStorage.getItem('dp_admin_sidebar');
+                if (v === '0') {
+                    adminSidebarExpanded = false;
+                    const nav = document.getElementById('admin-sidebar');
+                    if (nav) {
+                        nav.classList.remove('admin-sidebar-expanded');
+                        nav.classList.add('admin-sidebar-icons');
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function renderAdminClicksChart() {
+            function paint(barsId, labelsId, totalId) {
+                const barsEl = document.getElementById(barsId);
+                const labelsEl = document.getElementById(labelsId);
+                const totalEl = document.getElementById(totalId);
+                if (!barsEl) return;
+                let hist = [];
+                try { hist = JSON.parse(localStorage.getItem('dp_buy_history') || '[]'); } catch (e) {}
+                const days = 7;
+                const counts = [];
+                const labels = [];
+                const now = new Date();
+                const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                for (let i = days - 1; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+                    const key = d.toISOString().slice(0, 10);
+                    labels.push(dayNames[d.getDay()]);
+                    let c = 0;
+                    hist.forEach(function(h) {
+                        if (!h || !h.at) return;
+                        if (String(h.at).slice(0, 10) === key) c++;
+                    });
+                    counts.push(c);
+                }
+                const max = Math.max(1, Math.max.apply(null, counts));
+                const total = counts.reduce(function(a, b) { return a + b; }, 0);
+                if (totalEl) totalEl.textContent = String(total);
+                barsEl.innerHTML = counts.map(function(c) {
+                    const h = Math.max(c === 0 ? 4 : 12, Math.round((c / max) * 100));
+                    const color = c > 0
+                        ? 'background:linear-gradient(180deg,#fde047 0%,#eab308 100%);'
+                        : 'background:#334155;opacity:0.45;';
+                    return '<div class="flex-1 flex flex-col items-center justify-end h-full min-w-0">' +
+                        (c > 0 ? '<span class="text-[9px] font-bold text-slate-500 mb-1">' + c + '</span>' : '<span class="text-[9px] text-transparent mb-1">0</span>') +
+                        '<div class="w-full max-w-[28px] rounded-t-md" style="height:' + h + '%;' + color + '" title="' + c + ' compra(s)"></div>' +
+                        '</div>';
+                }).join('');
+                if (labelsEl) {
+                    labelsEl.innerHTML = labels.map(function(l) {
+                        return '<span class="flex-1 text-center truncate">' + l + '</span>';
+                    }).join('');
+                }
+            }
+            paint('admin-clicks-chart', 'admin-chart-labels', 'admin-chart-total');
+            paint('admin-clicks-chart-2', 'admin-chart-labels-2', 'admin-chart-total-2');
+        }
+
+
+        
+        function adminShowCfg(name) {
+            document.querySelectorAll('.admin-cfg-panel').forEach(function(el) { el.classList.add('hidden'); });
+            const p = document.getElementById('admin-cfg-' + name);
+            if (p) p.classList.remove('hidden');
+            document.querySelectorAll('.admin-cfg-nav').forEach(function(btn) {
+                btn.classList.toggle('admin-cfg-nav-active', btn.getAttribute('data-cfg') === name);
+            });
+            if (name === 'notificacoes' || name === 'dados') {
+                renderAdminCfgNotifList();
+            }
+            const su = document.getElementById('admin-cfg-session-user');
+            if (su && currentAdmin) su.textContent = '@' + (currentAdmin.user || '') + (currentAdmin.email ? ' · ' + currentAdmin.email : '');
+        }
+
+        function addAdminNotificationFromConfig(useSecond) {
+            const tEl = document.getElementById(useSecond ? 'admin-notif-title-2' : 'admin-notif-title');
+            const bEl = document.getElementById(useSecond ? 'admin-notif-body-2' : 'admin-notif-body');
+            const title = ((tEl || {}).value || '').trim();
+            const body = ((bEl || {}).value || '').trim();
+            if (!title) {
+                if (typeof showSiteToast === 'function') showSiteToast('Digite um título.', 'error');
+                return;
+            }
+            // Admin logado pode publicar (dono ou admin aprovado)
+            if (!currentAdmin) {
+                if (typeof showSiteToast === 'function') showSiteToast('Entre no Admin para enviar.', 'error');
+                return;
+            }
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
+            list.unshift({ id: 'n' + Date.now(), title: title, body: body, at: new Date().toISOString(), auto: false, by: currentAdmin.user || '' });
+            try { localStorage.setItem('dp_notifications', JSON.stringify(list.slice(0, 50))); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            if (tEl) tEl.value = '';
+            if (bEl) bEl.value = '';
+            if (typeof renderNotificationsList === 'function') renderNotificationsList();
+            renderAdminCfgNotifList();
+            if (typeof showSiteToast === 'function') showSiteToast('Notificação publicada no site.', 'success');
+        }
+
+        function renderAdminCfgNotifList() {
+            const box = document.getElementById('admin-cfg-notif-list');
+            if (!box) return;
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
+            list = list.filter(function(n) { return n && !n.auto; }).slice(0, 15);
+            if (!list.length) {
+                box.innerHTML = '<p class="text-slate-400 p-1">Nenhuma notificação manual ainda.</p>';
+                return;
+            }
+            box.innerHTML = list.map(function(n) {
+                return '<div class="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"><p class="font-bold text-brandYellow-500">' + String(n.title || '').replace(/</g,'&lt;') + '</p><p class="text-[10px] text-slate-400 mt-0.5">' + String(n.body || '').replace(/</g,'&lt;') + '</p></div>';
+            }).join('');
+        }
+
+        function adminPauseAllMine(pause) {
+            const eu = (typeof effectiveAdminUser === 'function') ? effectiveAdminUser() : (currentAdmin && currentAdmin.user);
+            if (!eu) return;
+            (products || []).forEach(function(p) {
+                if (p.owner === eu) p.paused = !!pause;
+            });
+            try { localStorage.setItem('dp_products', JSON.stringify(products)); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            if (typeof renderProducts === 'function') renderProducts();
+            if (typeof showSiteToast === 'function') showSiteToast(pause ? 'Suas ofertas foram pausadas.' : 'Ofertas reativadas.', 'success');
+        }
+
+        function adminClearBuyHistory() {
+            try { localStorage.removeItem('dp_buy_history'); } catch (e) {}
+            if (typeof totalSalesVal !== 'undefined') totalSalesVal = 0;
+            try { localStorage.setItem('dp_total_sales', '0'); } catch (e) {}
+            if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
+            if (typeof renderAdminClicksChart === 'function') renderAdminClicksChart();
+            if (typeof showSiteToast === 'function') showSiteToast('Histórico de cliques zerado.', 'success');
+        }
+
+
+        
+        function addAdminNotificationFromMenu() {
+            const tEl = document.getElementById('admin-menu-notif-title');
+            const bEl = document.getElementById('admin-menu-notif-body');
+            const title = ((tEl || {}).value || '').trim();
+            const body = ((bEl || {}).value || '').trim();
+            if (!title) {
+                if (typeof showSiteToast === 'function') showSiteToast('Digite um título.', 'error');
+                return;
+            }
+            if (!currentAdmin) {
+                if (typeof showSiteToast === 'function') showSiteToast('Entre no Admin para enviar.', 'error');
+                return;
+            }
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
+            list.unshift({ id: 'n' + Date.now(), title: title, body: body, at: new Date().toISOString(), auto: false, by: currentAdmin.user || '' });
+            try { localStorage.setItem('dp_notifications', JSON.stringify(list.slice(0, 50))); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            if (tEl) tEl.value = '';
+            if (bEl) bEl.value = '';
+            if (typeof renderNotificationsList === 'function') renderNotificationsList();
+            renderAdminMenuNotifList();
+            if (typeof showSiteToast === 'function') showSiteToast('Notificação publicada no site.', 'success');
+        }
+        function renderAdminMenuNotifList() {
+            const box = document.getElementById('admin-menu-notif-list');
+            if (!box) return;
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
+            list = list.filter(function(n) { return n && !n.auto; }).slice(0, 20);
+            if (!list.length) {
+                box.innerHTML = '<p class="text-slate-400 p-2">Nenhum aviso manual ainda.</p>';
+                return;
+            }
+            box.innerHTML = list.map(function(n) {
+                const d = n.at ? new Date(n.at).toLocaleString('pt-BR') : '';
+                return '<div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">' +
+                    '<p class="font-bold text-brandYellow-500">' + String(n.title || '').replace(/</g,'&lt;') + '</p>' +
+                    '<p class="text-[11px] text-slate-400 mt-0.5">' + String(n.body || '').replace(/</g,'&lt;') + '</p>' +
+                    '<p class="text-[9px] text-slate-500 mt-1">' + d + '</p></div>';
+            }).join('');
+        }
+
+
+        function adminShowSection(name) {
+            document.querySelectorAll('.admin-sec').forEach(function(el) { el.classList.add('hidden'); });
+            const sec = document.getElementById('admin-sec-' + name);
+            if (sec) sec.classList.remove('hidden');
+            document.querySelectorAll('.admin-nav-btn').forEach(function(btn) {
+                btn.classList.remove('admin-nav-active');
+                if (btn.getAttribute('data-admin-nav') === name) btn.classList.add('admin-nav-active');
+            });
+            // Garante que o drawer Admin continua aberto
+            const drawer = document.getElementById('settings-drawer');
+            if (drawer) {
+                drawer.classList.remove('hidden');
+                document.body.classList.add('settings-open');
+                document.body.style.overflow = 'hidden';
+            }
+            if (typeof switchSettingsTab === 'function') switchSettingsTab('admin');
+            if (name === 'produtos') renderAdminDashProducts();
+            if (name === 'cliques') { renderAdminDashClicks(); if (typeof renderAdminClicksChart === 'function') renderAdminClicksChart(); }
+            if (name === 'membros') renderAdminDashMembers();
+            if (name === 'mensagens') {
+                if (typeof renderAdminSuggestionsPanel === 'function') renderAdminSuggestionsPanel();
+                if (typeof renderPendingAdmins === 'function') renderPendingAdmins();
+                // mostra lista de msgs mesmo se não for owner
+                const panel = document.getElementById('admin-suggestions-panel');
+                if (panel) panel.classList.remove('hidden');
+            }
+            if (name === 'geral') { if (typeof updateAdminMetrics === 'function') updateAdminMetrics(); if (typeof renderAdminClicksChart === 'function') renderAdminClicksChart(); }
+            if (name === 'config' && typeof adminShowCfg === 'function') adminShowCfg('conta');
+            if (name === 'notificacoes' && typeof renderAdminMenuNotifList === 'function') renderAdminMenuNotifList();
+        }
+
+        function renderAdminDashProducts() {
+            const box = document.getElementById('admin-dash-products-list');
+            if (!box) return;
+            const eu = (typeof effectiveAdminUser === 'function') ? effectiveAdminUser() : (currentAdmin && currentAdmin.user);
+            const mine = (products || []).filter(function(p) { return !eu || p.owner === eu; });
+            const mineA = (announcements || []).filter(function(a) { return !eu || a.owner === eu; });
+            if (!mine.length && !mineA.length) {
+                box.innerHTML = '<p class="text-xs text-slate-400 p-4 bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800">Nenhum item seu ainda. Publique na aba Publicar.</p>';
+                return;
+            }
+            let html = '';
+            mine.forEach(function(p) {
+                html += '<div class="flex items-center gap-2 p-3 bg-white dark:bg-darkcard rounded-2xl border border-slate-200 dark:border-slate-800">' +
+                    '<img src="' + (p.image || '') + '" class="w-12 h-12 rounded-xl object-cover bg-slate-200 flex-shrink-0" onerror="this.style.opacity=0.3">' +
+                    '<div class="min-w-0 flex-1"><p class="font-bold text-xs truncate">' + (p.title || '') + '</p>' +
+                    '<p class="text-[11px] text-brandYellow-500 font-black">R$ ' + Number(p.price || 0).toFixed(2) + (p.paused ? ' · pausado' : '') + '</p></div>' +
+                    '<button type="button" onclick="editProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold">Editar</button>' +
+                    '<button type="button" onclick="togglePauseProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-slate-600 text-white text-[10px] font-bold">Pausar</button>' +
+                    '<button type="button" onclick="deleteProduct(' + p.id + ')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button></div>';
+            });
+            mineA.forEach(function(a) {
+                html += '<div class="flex items-center gap-2 p-3 bg-white dark:bg-darkcard rounded-2xl border border-blue-500/30">' +
+                    '<div class="min-w-0 flex-1"><p class="font-bold text-xs truncate">' + (a.title || '') + '</p></div>' +
+                    '<button type="button" onclick="editAnnouncement(' + a.id + ')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-[10px] font-bold">Editar</button>' +
+                    '<button type="button" onclick="deleteProduct(' + a.id + ')" class="px-2 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold">Excluir</button></div>';
+            });
+            box.innerHTML = html;
+        }
+
+        function renderAdminDashClicks() {
+            const box = document.getElementById('admin-dash-clicks-list');
+            if (!box) return;
+            let hist = [];
+            try { hist = JSON.parse(localStorage.getItem('dp_buy_history') || '[]'); } catch (e) {}
+            if (!hist.length) {
+                box.innerHTML = '<p class="text-slate-400 p-2">Nenhum clique em Comprar ainda.</p>';
+                return;
+            }
+            box.innerHTML = hist.slice(0, 40).map(function(h) {
+                const d = h.at ? new Date(h.at).toLocaleString('pt-BR') : '';
+                return '<div class="flex justify-between gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800"><span class="truncate text-slate-500">' + (h.url || '').slice(0, 48) + '</span><span class="flex-shrink-0 text-slate-400">' + d + '</span></div>';
+            }).join('');
+        }
+
+        function renderAdminDashMembers() {
+            const box = document.getElementById('admin-dash-members-list');
+            if (!box) return;
+            const users = window._siteUsers || [];
+            if (!users.length) {
+                box.innerHTML = '<p class="p-4 text-xs text-slate-400">Nenhum membro cadastrado ainda.</p>';
+                return;
+            }
+            box.innerHTML = users.map(function(u) {
+                return '<div class="flex items-center justify-between gap-2 px-3 py-2.5"><div class="min-w-0"><p class="font-bold text-xs truncate">@' + (u.username || 'user') + '</p><p class="text-[10px] text-slate-400 truncate">' + (u.email || '') + '</p></div><span class="text-[10px] font-bold text-slate-400">' + (u.provider || 'email') + '</span></div>';
+            }).join('');
+        }
+
+function updateAdminMetrics() {
             const deals = document.getElementById('admin-metric-deals');
             const members = document.getElementById('admin-metric-members');
             const sales = document.getElementById('admin-metric-sales');
+            const adminsEl = document.getElementById('admin-metric-admins');
             if (deals) deals.textContent = String((products || []).length + (announcements || []).length);
             if (members) members.textContent = String((window._siteUsers || []).length || 0);
             if (sales) sales.textContent = String(Math.floor(parseFloat(totalSalesVal) || 0));
+            if (adminsEl) adminsEl.textContent = String((admins || []).filter(function(a) { return a && !a.pending; }).length);
+            const badge = document.getElementById('admin-msg-badge');
+            if (badge) {
+                let n = 0;
+                try { n = JSON.parse(localStorage.getItem('dp_bug_reports') || '[]').length; } catch (e) {}
+                n += (admins || []).filter(function(a) { return a && a.pending; }).length;
+                if (n > 0) {
+                    badge.textContent = String(n);
+                    badge.classList.remove('hidden');
+                    badge.style.display = 'flex';
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
         }
 
         // Live Search Filter (products + announcements)
@@ -2791,7 +3412,7 @@
                 ranked.forEach(function(x) {
                     auto.push({
                         id: 'auto-' + x.p.id,
-                        title: '🔥 -' + x.pct + '% · ' + (x.p.title || 'Oferta'),
+                        title: '-' + x.pct + '% · ' + (x.p.title || 'Oferta'),
                         body: 'De R$ ' + Number(x.p.oldPrice).toFixed(2) + ' por R$ ' + Number(x.p.price).toFixed(2),
                         auto: true,
                         at: new Date().toISOString()
@@ -3602,6 +4223,63 @@
             // Admin NÃO bloqueia ao fechar configurações — só ao fechar o site ou em "Sair do painel"
         }
 
+        
+        function userShowCfg(name) {
+            document.querySelectorAll('.user-cfg-panel').forEach(function(el) { el.classList.add('hidden'); });
+            const p = document.getElementById('user-cfg-' + name);
+            if (p) p.classList.remove('hidden');
+            document.querySelectorAll('.user-cfg-nav').forEach(function(btn) {
+                btn.classList.toggle('user-cfg-nav-active', btn.getAttribute('data-ucfg') === name);
+            });
+        }
+        function addAdminNotificationFromGeral() {
+            const tEl = document.getElementById('admin-geral-notif-title');
+            const bEl = document.getElementById('admin-geral-notif-body');
+            const title = ((tEl || {}).value || '').trim();
+            const body = ((bEl || {}).value || '').trim();
+            if (!title) {
+                if (typeof showSiteToast === 'function') showSiteToast('Digite um título.', 'error');
+                return;
+            }
+            if (!currentAdmin) {
+                if (typeof showSiteToast === 'function') showSiteToast('Entre no Admin.', 'error');
+                return;
+            }
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('dp_notifications') || '[]'); } catch (e) {}
+            list.unshift({ id: 'n' + Date.now(), title: title, body: body, at: new Date().toISOString(), auto: false, by: currentAdmin.user || '' });
+            try { localStorage.setItem('dp_notifications', JSON.stringify(list.slice(0, 50))); } catch (e) {}
+            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            if (tEl) tEl.value = '';
+            if (bEl) bEl.value = '';
+            if (typeof renderNotificationsList === 'function') renderNotificationsList();
+            if (typeof showSiteToast === 'function') showSiteToast('Aviso publicado.', 'success');
+        }
+        function copySiteLink() {
+            const url = location.href.split('#')[0];
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    if (typeof showSiteToast === 'function') showSiteToast('Link copiado.', 'success');
+                }).catch(function() { prompt('Copie o link:', url); });
+            } else {
+                prompt('Copie o link:', url);
+            }
+        }
+        function confirmExitSite() {
+            if (typeof showSiteConfirm === 'function') {
+                showSiteConfirm('Sair do DealPeek?', function(ok) {
+                    if (ok) {
+                        try { window.close(); } catch (e) {}
+                        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b0f17;color:#94a3b8;font-family:sans-serif">Você pode fechar esta aba.</div>';
+                    }
+                });
+            } else if (confirm('Sair do DealPeek?')) {
+                try { window.close(); } catch (e) {}
+            }
+        }
+
+
         function switchSettingsTab(tab) {
             const prefContent = document.getElementById('tab-pref-content');
             const adminContent = document.getElementById('tab-admin-content');
@@ -3618,6 +4296,7 @@
                     adminBtn.style.display = '';
                 }
                 if (titleEl) titleEl.textContent = 'Ajustes';
+                if (typeof userShowCfg === 'function') userShowCfg('sistema');
                 if (subEl) subEl.textContent = 'Preferências do DealPeek';
             } else {
                 if (prefContent) prefContent.classList.add('hidden');
@@ -3683,29 +4362,39 @@
             }
         }
 
-        // Altera o font-size do <html> pixel a pixel (10–40px = 31 níveis)
+        // Tamanho do texto em px (padrão 21)
         function setFontSize(pxOrKey) {
-            let px = 16;
-            if (typeof pxOrKey === 'number' || /^\d+$/.test(String(pxOrKey))) {
-                px = Math.max(10, Math.min(40, parseInt(pxOrKey, 10) || 16));
+            let px = 21;
+            const raw = String(pxOrKey == null ? '21' : pxOrKey).replace(',', '.');
+            if (/^\d+(\.\d+)?$/.test(raw)) {
+                px = parseFloat(raw) || 21;
+                // legado escala 1–4 → converte
+                if (px > 0 && px <= 4) px = Math.round(16 * px);
             } else {
-                const map = { sm: 14, normal: 16, lg: 18, xl: 22 };
-                px = map[pxOrKey] || 16;
+                const map = { sm: 14, normal: 21, lg: 24, xl: 28 };
+                px = map[pxOrKey] || 21;
             }
+            px = Math.max(12, Math.min(36, Math.round(px)));
             document.documentElement.style.fontSize = px + 'px';
             document.body.classList.remove('font-sm', 'font-normal', 'font-lg', 'font-xl');
-            if (px <= 13) document.body.classList.add('font-sm');
-            else if (px <= 17) document.body.classList.add('font-normal');
-            else if (px <= 24) document.body.classList.add('font-lg');
+            if (px <= 15) document.body.classList.add('font-sm');
+            else if (px <= 22) document.body.classList.add('font-normal');
+            else if (px <= 28) document.body.classList.add('font-lg');
             else document.body.classList.add('font-xl');
             const slider = document.getElementById('font-size-slider');
             if (slider) slider.value = String(px);
             const lab = document.getElementById('font-size-label');
             if (lab) lab.textContent = px + 'px';
+            try {
+                const p = JSON.parse(localStorage.getItem('dp_prefs') || '{}');
+                p.fontSize = px;
+                p.fontScale = null;
+                localStorage.setItem('dp_prefs', JSON.stringify(p));
+            } catch (e) {}
         }
         function onFontSizeSlider(val) {
-            setFontSize(parseInt(val, 10) || 16);
-            savePrefs();
+            setFontSize(parseInt(val, 10) || 21);
+            if (typeof savePrefs === 'function') savePrefs();
         }
 
         function toggleProtoMode(enabled) {
@@ -3886,7 +4575,15 @@
             try { sessionStorage.setItem('dp_admin_session', found.user); } catch (e) {}
             document.getElementById('admin-locked-view').classList.add('hidden');
             document.getElementById('admin-unlocked-view').classList.remove('hidden');
-            document.getElementById('current-admin-label').textContent = currentAdmin.user + (found.role === 'owner' || isSiteOwner(found.email) ? ' · dono' : '');
+            const _lab = document.getElementById('current-admin-label');
+            if (_lab) {
+                _lab.textContent = '@' + currentAdmin.user;
+                _lab.classList.remove('hidden');
+            }
+            const _ex = document.getElementById('admin-exit-btn');
+            if (_ex) _ex.classList.remove('hidden');
+            const _sub = document.getElementById('settings-header-sub');
+            if (_sub) _sub.textContent = '@' + currentAdmin.user;
             renderMyAnnouncements();
             populateOtherAdminSelect();
             if (typeof renderAdminProductsManage === 'function') renderAdminProductsManage();
@@ -3894,6 +4591,8 @@
             if (typeof renderAdminSuggestionsPanel === 'function') renderAdminSuggestionsPanel();
             if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
             if (typeof renderPendingAdmins === 'function') renderPendingAdmins();
+            if (typeof restoreAdminSidebarState === 'function') restoreAdminSidebarState();
+            if (typeof adminShowSection === 'function') adminShowSection('geral');
         }
 
         function lockAdminMode() {
@@ -3908,7 +4607,11 @@
             if (unlocked) unlocked.classList.add('hidden');
             if (locked) locked.classList.remove('hidden');
             const label = document.getElementById('current-admin-label');
-            if (label) label.textContent = '';
+            if (label) { label.textContent = ''; label.classList.add('hidden'); }
+            const ex = document.getElementById('admin-exit-btn');
+            if (ex) ex.classList.add('hidden');
+            const sub = document.getElementById('settings-header-sub');
+            if (sub) sub.textContent = 'Painel administrativo';
         }
 
         // Sessão admin dura enquanto a aba do site estiver aberta (sessionStorage some ao fechar)
@@ -3931,7 +4634,9 @@
                 if (locked) locked.classList.add('hidden');
                 if (unlocked) unlocked.classList.remove('hidden');
                 const label = document.getElementById('current-admin-label');
-                if (label) label.textContent = currentAdmin.user;
+                if (label) { label.textContent = '@' + currentAdmin.user; label.classList.remove('hidden'); }
+                const ex2 = document.getElementById('admin-exit-btn');
+                if (ex2) ex2.classList.remove('hidden');
                 if (typeof renderMyAnnouncements === 'function') renderMyAnnouncements();
                 if (typeof populateOtherAdminSelect === 'function') populateOtherAdminSelect();
                 if (typeof renderAdminProductsManage === 'function') renderAdminProductsManage();
@@ -4222,8 +4927,9 @@
             document.getElementById('prod-ends-in').value = '';
             document.getElementById('prod-affiliate-url').value = p.affiliateUrl || '';
             document.getElementById('prod-img-url').value = p.image || '';
+            if (typeof adminShowSection === 'function') adminShowSection('publicar');
             const pub = document.getElementById('admin-publish-section');
-            if (pub) pub.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (pub) setTimeout(function(){ pub.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             if (typeof showSiteToast === 'function') {
                 showSiteToast('Produto carregado no formulário. Ajuste e publique de novo.', 'info');
             }
@@ -4521,8 +5227,16 @@
         function closeImageCropper(cancel) {
             const modal = document.getElementById('image-crop-modal');
             if (modal) modal.classList.add('hidden');
-            if (typeof restoreBodyScroll === 'function') restoreBodyScroll();
-            else document.body.style.overflow = '';
+            // Nunca fecha o drawer Admin ao sair do crop
+            const drawer = document.getElementById('settings-drawer');
+            if (drawer && !drawer.classList.contains('hidden')) {
+                document.body.style.overflow = 'hidden';
+                document.body.classList.add('settings-open');
+            } else if (typeof restoreBodyScroll === 'function') {
+                restoreBodyScroll();
+            } else {
+                document.body.style.overflow = '';
+            }
             if (cancel) {
                 const fileInput = document.getElementById('prod-file-png');
                 if (fileInput) fileInput.value = '';
@@ -4604,10 +5318,13 @@
             initCropDrag();
         }
 
-        function confirmCrop() {
+        function confirmCrop(ev) {
+            if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {} }
             const box = document.getElementById('crop-viewport');
             const img = cropState.img;
             if (!box || !img || !cropState.natW) return;
+            // Marca para não fechar o Admin ao fechar o crop
+            window._dpKeepAdminOpen = true;
             const outSize = 400; // menor = menos RAM
             const canvas = document.createElement('canvas');
             canvas.width = outSize;
@@ -4633,6 +5350,17 @@
             if (prev) prev.src = uploadedPngBase64;
             if (cont) cont.classList.remove('hidden');
             closeImageCropper(false);
+            // Volta para Publicar no Admin (não para a home)
+            const drawer = document.getElementById('settings-drawer');
+            if (drawer) {
+                drawer.classList.remove('hidden');
+                document.body.classList.add('settings-open');
+                document.body.style.overflow = 'hidden';
+            }
+            if (typeof switchSettingsTab === 'function') switchSettingsTab('admin');
+            if (typeof adminShowSection === 'function') adminShowSection('publicar');
+            window._dpKeepAdminOpen = false;
+            if (typeof showSiteToast === 'function') showSiteToast('Imagem ajustada. Continue publicando.', 'success');
         }
 
         // override preview to open cropper
@@ -4666,9 +5394,8 @@
                     notif: !!(document.getElementById('pref-notif') && document.getElementById('pref-notif').checked),
                     font: (function() {
                         const s = document.getElementById('font-size-slider');
-                        if (s && s.value) return parseInt(s.value, 10) || 16;
-                        const m = (document.documentElement.style.fontSize || '').match(/(\d+)/);
-                        return m ? parseInt(m[1], 10) : 16;
+                        if (s && s.value) return parseInt(s.value, 10) || 21;
+                        return 21;
                     })()
                 };
                 localStorage.setItem('dp_prefs', JSON.stringify(prefs));
@@ -4692,7 +5419,8 @@
                     if (t) t.checked = true;
                     toggleProtoMode(true);
                 }
-                if (prefs.font) setFontSize(prefs.font);
+                // Sempre inicia em 21px (pedido do dono)
+                setFontSize(21);
                 if (prefs.grid) {
                     const s = document.getElementById('pref-grid-cols');
                     if (s) s.value = prefs.grid;
@@ -5063,6 +5791,7 @@
                 email: email.trim(),
                 at: new Date().toISOString(),
                 user: currentUser ? (currentUser.email || currentUser.username) : null,
+                name: currentUser ? (currentUser.name || currentUser.fullName || currentUser.displayName || currentUser.username || '') : '',
                 to: OWNER_EMAIL
             });
             try { localStorage.setItem('dp_bug_reports', JSON.stringify(list.slice(0, 100))); } catch (err) {}
@@ -5086,8 +5815,9 @@
             if (!panel || !listEl) return;
             const email = (currentUser && currentUser.email) ? String(currentUser.email).toLowerCase() : '';
             const adminEmail = (currentAdmin && currentAdmin.email) ? String(currentAdmin.email).toLowerCase() : '';
-            const isOwner = (typeof isSiteOwner === 'function' && isSiteOwner(email)) || (typeof isSiteOwner === 'function' && isSiteOwner(adminEmail)) || email === 'hugorruansabinosouza679@gmail.com' || adminEmail === 'hugorruansabinosouza679@gmail.com';
-            if (!isOwner) {
+            // Mensagens: qualquer admin logado no painel vê; aprovação de pedidos continua no dono
+            const inAdmin = !!(typeof currentAdmin !== 'undefined' && currentAdmin);
+            if (!inAdmin) {
                 panel.classList.add('hidden');
                 return;
             }
@@ -5098,18 +5828,33 @@
                 listEl.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Nenhuma sugestão ou correção ainda.</p>';
                 return;
             }
+            const users = window._siteUsers || [];
+            function resolveFullName(item) {
+                const em = String(item.email || item.user || '').toLowerCase();
+                let full = item.name || item.fullName || item.displayName || '';
+                if (!full && em) {
+                    const u = users.find(function(x) {
+                        return (x.email || '').toLowerCase() === em || (x.username || '').toLowerCase() === em;
+                    });
+                    if (u) full = u.name || u.fullName || u.displayName || u.username || '';
+                }
+                if (!full) full = item.user || item.email || 'Anônimo';
+                return String(full);
+            }
             listEl.innerHTML = list.slice(0, 40).map(function(item, idx) {
                 const d = item.at ? new Date(item.at).toLocaleString('pt-BR') : '';
                 const tipo = item.type === 'melhoria' ? 'Melhoria' : item.type === 'outro' ? 'Outro' : 'Bug';
-                const from = item.email || item.user || 'anônimo';
+                const fullName = resolveFullName(item);
+                const contact = item.email || item.user || '';
                 return (
                     '<div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-2">' +
                     '<div class="flex items-center justify-between gap-2 mb-1">' +
                     '<span class="text-[10px] font-black uppercase text-brandYellow-500">' + tipo + '</span>' +
                     '<span class="text-[10px] text-slate-400">' + d + '</span>' +
                     '</div>' +
-                    '<p class="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap">' + String(item.msg || '').replace(/</g,'&lt;') + '</p>' +
-                    '<p class="text-[10px] text-slate-400 mt-1.5">De: ' + String(from).replace(/</g,'&lt;') + '</p>' +
+                    '<p class="text-sm font-bold text-slate-900 dark:text-white">' + fullName.replace(/</g,'&lt;') + '</p>' +
+                    (contact && contact !== fullName ? '<p class="text-[10px] text-slate-400">' + String(contact).replace(/</g,'&lt;') + '</p>' : '') +
+                    '<p class="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap mt-1.5">' + String(item.msg || '').replace(/</g,'&lt;') + '</p>' +
                     '</div>'
                 );
             }).join('');
@@ -5279,14 +6024,14 @@
     </div>
 
     <!-- Modal Crop / Zoom da imagem do produto (proporção 1:1) -->
-    <div id="image-crop-modal" class="hidden fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="image-crop-modal" class="hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder w-full max-w-md rounded-2xl p-4 sm:p-5 shadow-2xl text-slate-800 dark:text-slate-100">
             <div class="flex items-center justify-between mb-3">
                 <div>
                     <h3 class="font-black text-base">Ajustar imagem do produto</h3>
                     <p class="text-[11px] text-slate-500">Proporção 1:1 (quadrado). Arraste para mover e use o zoom.</p>
                 </div>
-                <button type="button" onclick="closeImageCropper(true)" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+                <button type="button" onclick="event.stopPropagation(); closeImageCropper(true)" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -5302,8 +6047,8 @@
                 <p class="text-[10px] text-slate-400 text-center">Se a imagem for grande demais, aumente o zoom e posicione o produto no centro do quadro.</p>
             </div>
             <div class="mt-4 grid grid-cols-2 gap-2">
-                <button type="button" onclick="closeImageCropper(true)" class="py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">Cancelar</button>
-                <button type="button" onclick="confirmCrop()" class="py-2.5 rounded-xl text-xs font-extrabold bg-brandYellow-500 hover:bg-brandYellow-400 text-navy-900">Usar esta imagem</button>
+                <button type="button" onclick="event.stopPropagation(); closeImageCropper(true)" class="py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">Cancelar</button>
+                <button type="button" onclick="confirmCrop(event)" class="py-2.5 rounded-xl text-xs font-extrabold bg-brandYellow-500 hover:bg-brandYellow-400 text-navy-900">Usar esta imagem</button>
             </div>
         </div>
     </div>
