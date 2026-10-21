@@ -109,7 +109,40 @@
 
         /* Animated Splash Screen Transition */
         #splash-screen {
-            transition: opacity 0.5s ease-out, visibility 0.5s;
+            transition: opacity 0.55s ease-out, visibility 0.55s;
+        }
+        #splash-load-track {
+            width: min(280px, 72vw);
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
+            position: relative;
+        }
+        #splash-load-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #ca8a04 0%, #eab308 45%, #fde047 100%);
+            box-shadow: 0 0 16px rgba(234, 179, 8, 0.55);
+            transition: width 0.25s ease-out;
+        }
+        #splash-load-bar.is-indeterminate {
+            width: 40% !important;
+            animation: splash-slide 1.1s ease-in-out infinite;
+        }
+        @keyframes splash-slide {
+            0% { transform: translateX(-120%); }
+            100% { transform: translateX(320%); }
+        }
+        #splash-load-label {
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.85);
+            margin-top: 12px;
+            font-weight: 700;
         }
 
         /* Acessibilidades — idosos e crianças */
@@ -530,14 +563,19 @@
 
     <!-- 1. ANIMATED INTRO SPLASH SCREEN -->
     <div id="splash-screen" class="fixed inset-0 z-50 bg-navy-900 flex flex-col items-center justify-center text-white p-4">
-        <div class="text-center animate-bounce mb-3">
+        <div class="text-center mb-3">
             <h1 class="text-4xl sm:text-6xl font-black tracking-tight">
                 <span class="text-white">Deal</span><span class="text-brandYellow-500">Peek</span>
             </h1>
             <span class="block text-[11px] sm:text-xs uppercase tracking-[0.35em] font-extrabold text-slate-300 mt-1">GENERAL</span>
         </div>
         <p class="text-slate-300 text-base sm:text-lg italic font-light tracking-wide">Peek. Buy. Smile.</p>
-        <div class="mt-8 w-20 h-1 bg-brandYellow-500 rounded-full animate-pulse"></div>
+        <div class="mt-10 flex flex-col items-center w-full">
+            <div id="splash-load-track" aria-hidden="true">
+                <div id="splash-load-bar" class="is-indeterminate"></div>
+            </div>
+            <p id="splash-load-label">Carregando…</p>
+        </div>
     </div>
 
     <!-- 2. SLIM HEADER BAR -->
@@ -2472,13 +2510,37 @@
 
         // Startup Initialization
         window.onload = async function() {
-            setTimeout(() => {
+            (function runSplashProgress() {
                 const splash = document.getElementById('splash-screen');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => { splash.style.visibility = 'hidden'; }, 300);
+                const bar = document.getElementById('splash-load-bar');
+                const label = document.getElementById('splash-load-label');
+                if (!splash) return;
+                let pct = 0;
+                if (bar) {
+                    bar.classList.remove('is-indeterminate');
+                    bar.style.width = '8%';
                 }
-            }, 600);
+                const steps = [
+                    { at: 180, p: 28, text: 'Preparando…' },
+                    { at: 420, p: 55, text: 'Carregando ofertas…' },
+                    { at: 700, p: 82, text: 'Quase lá…' },
+                    { at: 980, p: 100, text: 'Pronto' }
+                ];
+                steps.forEach(function(s) {
+                    setTimeout(function() {
+                        pct = s.p;
+                        if (bar) bar.style.width = pct + '%';
+                        if (label) label.textContent = s.text;
+                    }, s.at);
+                });
+                setTimeout(function() {
+                    splash.style.opacity = '0';
+                    setTimeout(function() {
+                        splash.style.visibility = 'hidden';
+                        splash.style.pointerEvents = 'none';
+                    }, 450);
+                }, 1150);
+            })();
 
             // Limpa a barra de busca de forma agressiva (Edge grava histórico de autofill)
             // Limpa busca uma vez (sem observer — economiza RAM)
@@ -5732,10 +5794,22 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
                     if (!html || html.length < 50) continue;
 
                     const getMeta = function(prop) {
-                        const re1 = new RegExp('<meta[^>]+(?:property|name)=["\\']' + prop + '["\\'][^>]+content=["\\']([^"\\']+)["\\']', 'i');
-                        const re2 = new RegExp('<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+(?:property|name)=["\\']' + prop + '["\\']', 'i');
-                        const m = html.match(re1) || html.match(re2);
-                        return m ? m[1] : '';
+                        try {
+                            const lower = html.toLowerCase();
+                            const keys = ['property="' + prop.toLowerCase() + '"', "property='" + prop.toLowerCase() + "'", 'name="' + prop.toLowerCase() + '"', "name='" + prop.toLowerCase() + "'"];
+                            for (let ki = 0; ki < keys.length; ki++) {
+                                let from = 0;
+                                while (true) {
+                                    const idx = lower.indexOf(keys[ki], from);
+                                    if (idx < 0) break;
+                                    const slice = html.slice(Math.max(0, idx - 80), idx + 220);
+                                    const m = slice.match(/content\s*=\s*["']([^"']+)["']/i);
+                                    if (m && m[1]) return m[1];
+                                    from = idx + keys[ki].length;
+                                }
+                            }
+                        } catch (e) {}
+                        return '';
                     };
                     if (!title) title = getMeta('og:title') || getMeta('twitter:title') || title;
                     if (!description) description = getMeta('og:description') || getMeta('description') || description;
@@ -6447,8 +6521,6 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
                 // não limpa imagem já confirmada
             }
         }
-
-       }
 
         function confirmCrop(ev) {
             if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {} }
