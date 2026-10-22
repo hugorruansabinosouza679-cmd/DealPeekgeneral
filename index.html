@@ -112,8 +112,8 @@
             transition: opacity 0.55s ease-out, visibility 0.55s;
         }
         #splash-load-track {
-            width: min(280px, 72vw);
-            height: 10px;
+            width: min(300px, 78vw);
+            height: 12px;
             border-radius: 999px;
             background: rgba(255,255,255,0.12);
             overflow: hidden;
@@ -137,12 +137,12 @@
             100% { transform: translateX(320%); }
         }
         #splash-load-label {
-            font-size: 11px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(226, 232, 240, 0.85);
-            margin-top: 12px;
-            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.06em;
+            color: #eab308;
+            margin-top: 14px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
         }
 
         /* Acessibilidades — idosos e crianças */
@@ -496,8 +496,34 @@
         }
         @media (max-width: 640px) {
             #carousel-section {
-                margin-left: -0.25rem;
-                margin-right: -0.25rem;
+                margin-left: 0;
+                margin-right: 0;
+            }
+            #carousel-section .ann-slide-desktop {
+                display: none !important;
+            }
+            #carousel-section .ann-slide-mobile {
+                display: flex !important;
+            }
+            #carousel-section .carousel-nav-btn {
+                width: 2.25rem;
+                height: 2.25rem;
+            }
+            .product-card .product-card-title {
+                font-size: 0.75rem !important;
+                line-height: 1.25 !important;
+            }
+            .product-card button {
+                font-size: 0.7rem !important;
+                min-height: 36px !important;
+            }
+        }
+        @media (min-width: 641px) {
+            #carousel-section .ann-slide-mobile {
+                display: none !important;
+            }
+            #carousel-section .ann-slide-desktop {
+                display: block !important;
             }
         }
         /* Com zoom alto, evita cortar botoes do carrossel */
@@ -574,7 +600,7 @@
             <div id="splash-load-track" aria-hidden="true">
                 <div id="splash-load-bar" class="is-indeterminate"></div>
             </div>
-            <p id="splash-load-label">Carregando…</p>
+            <p id="splash-load-label">0%</p>
         </div>
     </div>
 
@@ -713,24 +739,14 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                 </button>
             </div>
-            <!-- Bolinhas em cima do texto "anúncio(s)" -->
             <div class="mt-3 flex flex-col items-center gap-1.5">
                 <div id="carousel-dots" class="flex justify-center items-center gap-2">
                     <!-- dots via JS -->
                 </div>
-                <span id="announcement-count" class="text-xs font-semibold px-3 py-1 rounded-full bg-brandYellow-500/20 text-brandYellow-500 border border-brandYellow-500/40">0 anúncio(s)</span>
+                <span id="announcement-count" class="hidden">0</span>
             </div>
         </div>
 
-        <!-- Trust links -->
-        <div data-trust-bar class="mb-4 flex flex-wrap gap-2 justify-center text-[11px]">
-            <button type="button" onclick="openInfoPage('safe')" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">É seguro?</button>
-            <button type="button" onclick="openInfoPage('money')" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">Como ganhamos</button>
-            <button type="button" onclick="openInfoPage('earn')" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">Como você ganha</button>
-            <button type="button" onclick="openInfoPage('faq')" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">FAQ</button>
-            <button type="button" onclick="openInfoPage('terms')" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">Termos</button>
-            <button type="button" onclick="openChannelsModal()" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300">Canais</button>
-        </div>
         <!-- Search Bar Component -->
         <div class="mb-8 max-w-2xl mx-auto">
             <form class="search-container relative flex items-center shadow-lg rounded-2xl overflow-hidden p-1 transition-colors" autocomplete="off" onsubmit="event.preventDefault(); filterProducts(); return false;">
@@ -1756,6 +1772,10 @@
         // NUNCA use service_role, sb_secret_ ou senha do banco neste arquivo.
         // ============================================================
         const DP_CLOUD = {
+            // Opcional: chave gratuita Groq (console.groq.com) para IA avançada no site
+            // NÃO compartilhe a chave em repositório público se o repo for público — use só se o site for seu
+            groqApiKey: '', // cole aqui: gsk_...
+
             // Project URL (sem /rest/v1 — o cliente supabase-js monta a API sozinho)
             supabaseUrl: 'https://koywxalpjsbwrkjbjnee.supabase.co',
             // Chave publishable / anon (pública no frontend — NÃO é service_role)
@@ -2335,11 +2355,78 @@
             return false;
         }
 
+        /** Atualização ao vivo a cada 5s — só catálogo (produtos/anúncios), aba visível */
+        async function liveSyncCatalog() {
+            if (document.hidden) return;
+            if (window._dpLoadingFromCloud || window._dpLiveSyncing) return;
+            if (!isCloudConfigured()) return;
+            const client = await initCloudDb();
+            if (!client) return;
+            window._dpLiveSyncing = true;
+            try {
+                const { data, error } = await client
+                    .from(DP_CLOUD.table || 'dp_store')
+                    .select('products,announcements,admins,updated_at')
+                    .eq('id', 'main')
+                    .maybeSingle();
+                if (error || !data) return;
+
+                const remoteAt = data.updated_at || '';
+                if (remoteAt && remoteAt === window._dpLastLiveSyncAt) return;
+
+                const beforeP = JSON.stringify((products || []).map(function(p) { return p && p.id; }));
+                const beforeA = JSON.stringify((announcements || []).map(function(a) { return a && a.id; }));
+
+                // Merge: remoto manda no catálogo global
+                if (Array.isArray(data.products)) {
+                    products = data.products.slice();
+                }
+                if (Array.isArray(data.announcements)) {
+                    announcements = data.announcements.slice();
+                }
+                if (Array.isArray(data.admins) && data.admins.length) {
+                    applyDbPayload({ admins: data.admins }, { preferRemote: true });
+                }
+
+                const afterP = JSON.stringify((products || []).map(function(p) { return p && p.id; }));
+                const afterA = JSON.stringify((announcements || []).map(function(a) { return a && a.id; }));
+                const changed = beforeP !== afterP || beforeA !== afterA;
+
+                window._dpLastLiveSyncAt = remoteAt || String(Date.now());
+                if (changed) {
+                    try {
+                        localStorage.setItem('dp_products', JSON.stringify(products || []));
+                        localStorage.setItem('dp_announcements', JSON.stringify(announcements || []));
+                    } catch (e) {}
+                    if (typeof applyProductFilters === 'function') applyProductFilters();
+                    if (typeof renderAnnouncements === 'function') renderAnnouncements();
+                    if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
+                }
+            } catch (e) {
+                console.warn('liveSync', e);
+            } finally {
+                window._dpLiveSyncing = false;
+            }
+        }
+
+        function startLiveSync() {
+            if (window._dpLiveSyncTimer) {
+                clearInterval(window._dpLiveSyncTimer);
+                window._dpLiveSyncTimer = null;
+            }
+            if (!isCloudConfigured()) return;
+            // primeira puxada leve em 2s, depois a cada 5s
+            setTimeout(function() { liveSyncCatalog(); }, 2000);
+            window._dpLiveSyncTimer = setInterval(function() {
+                if (!document.hidden) liveSyncCatalog();
+            }, 5000);
+        }
+
         function updateDbFolderStatus() {
             const el = document.getElementById('pc-save-status');
             if (!el) return;
             if (window._dpDbMode === 'cloud' && window._dpDbOnline) {
-                el.textContent = 'Nuvem OK — produtos/anúncios/admins iguais para todos os usuários';
+                el.textContent = 'Nuvem OK — atualiza sozinho a cada 5s (produtos iguais pra todos)';
                 el.className = 'text-[11px] font-semibold text-emerald-500 leading-relaxed';
             } else if (isCloudConfigured() && !window._dpDbOnline) {
                 el.textContent = 'Nuvem offline — só este navegador vê os dados. Rode o SQL de RLS no Supabase.';
@@ -2515,31 +2602,28 @@
                 const bar = document.getElementById('splash-load-bar');
                 const label = document.getElementById('splash-load-label');
                 if (!splash) return;
-                let pct = 0;
                 if (bar) {
                     bar.classList.remove('is-indeterminate');
-                    bar.style.width = '8%';
+                    bar.style.width = '0%';
                 }
-                const steps = [
-                    { at: 180, p: 28, text: 'Preparando…' },
-                    { at: 420, p: 55, text: 'Carregando ofertas…' },
-                    { at: 700, p: 82, text: 'Quase lá…' },
-                    { at: 980, p: 100, text: 'Pronto' }
-                ];
-                steps.forEach(function(s) {
-                    setTimeout(function() {
-                        pct = s.p;
-                        if (bar) bar.style.width = pct + '%';
-                        if (label) label.textContent = s.text;
-                    }, s.at);
-                });
-                setTimeout(function() {
-                    splash.style.opacity = '0';
-                    setTimeout(function() {
-                        splash.style.visibility = 'hidden';
-                        splash.style.pointerEvents = 'none';
-                    }, 450);
-                }, 1150);
+                if (label) label.textContent = '0%';
+                let pct = 0;
+                const timer = setInterval(function() {
+                    pct += 4;
+                    if (pct > 100) pct = 100;
+                    if (bar) bar.style.width = pct + '%';
+                    if (label) label.textContent = pct + '%';
+                    if (pct >= 100) {
+                        clearInterval(timer);
+                        setTimeout(function() {
+                            splash.style.opacity = '0';
+                            setTimeout(function() {
+                                splash.style.visibility = 'hidden';
+                                splash.style.pointerEvents = 'none';
+                            }, 400);
+                        }, 180);
+                    }
+                }, 32);
             })();
 
             // Limpa a barra de busca de forma agressiva (Edge grava histórico de autofill)
@@ -2562,9 +2646,10 @@
             }
             if (typeof updateDbFolderStatus === 'function') updateDbFolderStatus();
 
-            // Sem polling contínuo (economiza RAM/CPU). Grava só quando há mudança.
+            // Atualização ao vivo a cada 5s (produtos novos aparecem pra todo mundo)
             if (window._dpDbSyncTimer) { clearInterval(window._dpDbSyncTimer); window._dpDbSyncTimer = null; }
-            // Pausa timers quando a aba não está visível (maior economia de RAM/CPU)
+            if (typeof startLiveSync === 'function') startLiveSync();
+            // Pausa timers quando a aba não está visível (economiza RAM/CPU)
             if (!window._dpVisibilityBound) {
                 window._dpVisibilityBound = true;
                 document.addEventListener('visibilitychange', function() {
@@ -2575,6 +2660,7 @@
                         }
                         if (window._dpPurgeTimer) { clearInterval(window._dpPurgeTimer); window._dpPurgeTimer = null; }
                         if (window._dpSaveTimer) { clearTimeout(window._dpSaveTimer); window._dpSaveTimer = null; }
+                        if (window._dpLiveSyncTimer) { clearInterval(window._dpLiveSyncTimer); window._dpLiveSyncTimer = null; }
                     } else {
                         if (typeof announcements !== 'undefined' && announcements.length && typeof carouselNext === 'function') {
                             if (carouselTimer) clearInterval(carouselTimer);
@@ -2583,6 +2669,8 @@
                         if (!window._dpPurgeTimer && typeof purgeExpiredItems === 'function') {
                             window._dpPurgeTimer = setInterval(purgeExpiredItems, 60000);
                         }
+                        if (typeof startLiveSync === 'function') startLiveSync();
+                        if (typeof liveSyncCatalog === 'function') liveSyncCatalog();
                     }
                 });
             }
@@ -2959,48 +3047,65 @@
                 slide.className = 'w-full flex-shrink-0';
                 slide.style.minWidth = '100%';
 
-                // Layout #9: full-bleed — imagem de fundo + faixa glass por cima
+                // Layout: desktop lado a lado / mobile empilhado (foto em cima, texto legível)
+                const priceTxt = (typeof formatMoneyDisplay === 'function')
+                    ? formatMoneyDisplay(item.price)
+                    : ('R$ ' + (item.price > 0 ? Number(item.price).toFixed(2) : '?'));
+                const oldTxt = item.oldPrice
+                    ? ('<span class="text-xs text-slate-400 line-through">R$ ' + Number(item.oldPrice).toFixed(2) + '</span>')
+                    : '';
                 slide.innerHTML = `
-                    <div class="relative h-[260px] sm:h-[300px] max-h-[320px] overflow-hidden bg-transparent dark:bg-slate-950/40">
-                        <!-- Fundo full-bleed (suave / desfocado) -->
+                    <!-- MOBILE: vertical, fácil de ler -->
+                    <div class="ann-slide-mobile flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-darkcard shadow-md">
+                        <div class="relative w-full bg-slate-100 dark:bg-slate-900" style="aspect-ratio:16/10;max-height:200px;">
+                            <img src="${item.image}" alt="${item.title}" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy" onerror="this.src='https://placehold.co/400x220/0b1d3a/FFFFFF?text=Oferta'">
+                            <div class="absolute top-2 left-2 flex gap-1 flex-wrap">
+                                <span class="bg-brandYellow-500 text-navy-900 font-black text-[10px] px-2 py-0.5 rounded-full">${item.badge || 'OFERTA'}</span>
+                                ${endsIn}
+                            </div>
+                        </div>
+                        <div class="p-3 space-y-2">
+                            <h3 class="text-sm font-black leading-snug text-slate-900 dark:text-white line-clamp-2">${item.title}</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-lg font-black text-brandYellow-500">${priceTxt}</span>
+                                ${oldTxt}
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="buyAffiliateProduct('${affiliateLink}', ${item.id})" class="py-2.5 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">Comprar</button>
+                                <button type="button" onclick="addToCartFromAny(${item.id})" class="py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs">Carrinho</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DESKTOP: layout wide -->
+                    <div class="ann-slide-desktop relative h-[300px] max-h-[320px] overflow-hidden bg-transparent dark:bg-slate-950/40 rounded-2xl">
                         <img src="${item.image}" alt="" class="absolute inset-0 w-full h-full object-cover scale-110 blur-sm opacity-35 dark:opacity-50" aria-hidden="true" onerror="this.style.display='none'">
                         <div class="absolute inset-0 bg-gradient-to-r from-white/50 via-white/30 to-white/15 dark:from-slate-950/90 dark:via-slate-950/55 dark:to-slate-950/30"></div>
-
-                        <!-- Produto nítido -->
-                        <div class="absolute left-0 top-0 bottom-0 w-[48%] sm:w-[44%] flex items-center justify-center p-1.5 sm:p-3 z-[1]">
-                            <img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" class="max-h-full max-w-full w-full object-contain drop-shadow-2xl scale-105" onerror="this.src='https://placehold.co/400x220/0b1d3a/FFFFFF?text=Comercial'">
+                        <div class="absolute left-0 top-0 bottom-0 w-[44%] flex items-center justify-center p-3 z-[1]">
+                            <img src="${item.image}" alt="${item.title}" loading="lazy" class="max-h-full max-w-full object-contain drop-shadow-2xl" onerror="this.src='https://placehold.co/400x220/0b1d3a/FFFFFF?text=Oferta'">
                         </div>
-
-                        <!-- Faixa glass: transparente no claro e no escuro -->
-                        <div class="absolute right-2 sm:right-4 top-2 bottom-2 left-[46%] sm:left-[42%] z-[2] flex flex-col justify-between rounded-2xl border border-slate-300/50 dark:border-white/20 bg-white/40 dark:bg-black/35 backdrop-blur-xl shadow-2xl p-3 sm:p-5 min-w-0 text-slate-900 dark:text-white">
+                        <div class="absolute right-4 top-2 bottom-2 left-[42%] z-[2] flex flex-col justify-between rounded-2xl border border-slate-300/50 dark:border-white/20 bg-white/40 dark:bg-black/35 backdrop-blur-xl shadow-2xl p-5 min-w-0 text-slate-900 dark:text-white">
                             <div>
                                 <div class="flex items-center gap-2 mb-2 flex-wrap">
                                     <span class="bg-brandYellow-500 text-navy-900 font-black text-[10px] px-2 py-0.5 rounded-full uppercase">${item.badge || 'ANÚNCIO'}</span>
-                                    <span class="bg-red-500/90 text-white font-black text-[9px] px-1.5 py-0.5 rounded-full uppercase animate-pulse">OFERTA</span>
                                     ${endsIn}
                                 </div>
-                                <div class="flex items-center gap-1 text-brandYellow-600 dark:text-brandYellow-400 text-xs font-bold mb-1">
-                                    <span>★</span> <span>${item.rating || '5.0'}</span>
-                                </div>
-                                <h3 class="text-sm sm:text-lg font-black leading-tight line-clamp-2 text-slate-900 dark:text-white">${item.title}</h3>
+                                <h3 class="text-lg font-black leading-tight line-clamp-2">${item.title}</h3>
                             </div>
                             <div>
                                 <div class="flex items-baseline gap-2 mb-2.5 flex-wrap">
-                                    <span class="text-xl sm:text-2xl font-black text-brandYellow-600 dark:text-brandYellow-400">R$ ${(item.price > 0 ? item.price.toFixed(2) : '?')}</span>
-                                    ${item.oldPrice ? `<span class="text-xs text-slate-400 dark:text-white/50 line-through">R$ ${item.oldPrice.toFixed(2)}</span>` : ''}
+                                    <span class="text-2xl font-black text-brandYellow-500">${priceTxt}</span>
+                                    ${oldTxt}
                                 </div>
-                                <div class="flex flex-col sm:flex-row gap-1.5">
-                                    <button onclick="buyAffiliateProduct('${affiliateLink}', ${item.id})" class="flex-1 bg-brandYellow-500 hover:bg-brandYellow-400 text-navy-900 font-extrabold text-xs sm:text-sm px-3 py-2.5 rounded-xl transition shadow-lg">
-                                        Comprar
-                                    </button>
-                                    <button onclick="addToCartFromAny(${item.id})" class="flex-1 bg-slate-200/90 hover:bg-slate-300 dark:bg-white/15 dark:hover:bg-white/25 text-slate-800 dark:text-white font-bold text-[11px] sm:text-xs px-3 py-2.5 rounded-xl transition border border-slate-300 dark:border-white/25 backdrop-blur-sm">
-                                        Adicionar ao carrinho
-                                    </button>
+                                <div class="flex gap-1.5">
+                                    <button type="button" onclick="buyAffiliateProduct('${affiliateLink}', ${item.id})" class="flex-1 bg-brandYellow-500 text-navy-900 font-extrabold text-sm px-3 py-2.5 rounded-xl">Comprar</button>
+                                    <button type="button" onclick="addToCartFromAny(${item.id})" class="flex-1 bg-slate-200/90 dark:bg-white/15 text-slate-800 dark:text-white font-bold text-xs px-3 py-2.5 rounded-xl border border-slate-300 dark:border-white/25">Carrinho</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
+
                 track.appendChild(slide);
 
                 // Dot
@@ -5998,20 +6103,21 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             const priceEl = document.getElementById('prod-price');
             const titleEl = document.getElementById('prod-title');
 
+            // Ações do site (sempre prioritárias)
             if (/preço|preco|buscar|link|automá|automatic|valor|achar/.test(low)) {
-                if (!link) return 'Não tem link no campo de publicar. Cola o link em Admin → Publicar e pede “buscar preço”.';
-                dpAiPush('bot', 'Lendo o link agora…');
+                if (!link) return 'Cola o link em Admin → Publicar e fala “buscar preço”.';
+                dpAiPush('bot', 'Lendo o link…');
                 try {
                     const meta = await fetchProductFromLink(true);
                     if (meta && meta.price != null) {
-                        return 'Preço: R$ ' + formatMoneyBrInput(meta.price) + (meta.title ? (' · ' + String(meta.title).slice(0, 70)) : '') + '\nJá preenchi o formulário.';
+                        return 'Preço: R$ ' + formatMoneyBrInput(meta.price) + (meta.title ? (' · ' + String(meta.title).slice(0, 70)) : '') + '\nFormulário preenchido.';
                     }
                     if (meta && (meta.title || meta.image)) {
-                        return 'Trouxe título/foto, mas o preço não veio da loja. Digita no Manual (ex.: 199,90).';
+                        return 'Título/foto ok, preço não veio. Digita no Manual (ex.: 199,90).';
                     }
-                    return 'Não li esse link. Tenta outro ou preenche o preço na mão.';
+                    return 'Não li esse link. Tenta outro ou preenche na mão.';
                 } catch (e) {
-                    return 'Erro ao buscar. Confere se o link abre no navegador.';
+                    return 'Erro ao buscar o link.';
                 }
             }
             if (/descri/.test(low)) {
@@ -6025,33 +6131,83 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
                     return 'Falhou ao ler descrição.';
                 }
             }
-            if (/compra|clique|contador|52001|métrica|metrica/.test(low)) {
+            if (/compra|clique|contador/.test(low)) {
                 const n = typeof normalizeSalesCounter === 'function' ? normalizeSalesCounter() : (totalSalesVal || 0);
                 if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
-                return 'Toques em Comprar recalculados: ' + n + '.';
+                return 'Toques em Comprar: ' + n + '.';
             }
             if (/imagem|foto|crop|recorte/.test(low)) {
-                return 'Publicar → Manual → envie foto → ajusta o recorte → Confirmar. Continua no Admin.';
-            }
-            if (/regra|proibid|nsfw|\+18|termos/.test(low)) {
-                if (typeof openInfoPage === 'function') openInfoPage('terms');
-                return 'Abri os termos.';
+                return 'Publicar → Manual → envie foto → recorte → Confirmar. Continua no Admin.';
             }
             if (/canal/.test(low)) {
                 if (typeof openChannelsModal === 'function') openChannelsModal();
                 return 'Abri os canais.';
             }
+            if (/seguro|golpe|confiança|confianca/.test(low)) {
+                return 'A compra fecha na loja (Shopee, Mercado Livre…). O DealPeek não pede cartão nem senha de banco. Use Denunciar se algo parecer estranho. Links verificados têm selo https.';
+            }
+            if (/ganhamos|comiss|afiliad|dinheiro do site|monetiz/.test(low)) {
+                return 'Ganhamos com link de afiliado: quando alguém clica em Comprar e fecha pedido na loja, a loja pode pagar comissão — sem custo extra pra quem compra. Transparência: não controlamos estoque nem preço final.';
+            }
+            if (/eu ganho|como ganhar|ser admin|divulgar/.test(low)) {
+                return 'Peça conta admin, publique ofertas com SEU link de afiliado. Regras: preço certo, descrição do produto, sem +18/golpe. O dono pode pausar posts que quebrem regra.';
+            }
+            if (/faq|dúvida|duvida|como funciona/.test(low)) {
+                return '• Preço mudou? A loja atualiza a qualquer momento.\n• Pagar o DealPeek? Não.\n• Denunciar preço: no detalhe do produto.\n• Publicar: Admin → Publicar (Automático ou Manual).\n• Idioma/dólar: Ajustes.\n• Produtos novos: o site atualiza a cada 5s pela nuvem.';
+            }
+            if (/regra|proibid|nsfw|\+18|termos/.test(low)) {
+                return '1) Oferta real com link válido\n2) Preço e descrição do PRODUTO\n3) Sem +18, golpe, ilegal, spam\n4) Preço R$ 0 ou enganoso → removido\n5) Admin pode ser suspenso com motivo\nDúvidas: hugorruansabinosouza679@gmail.com';
+            }
+            if (/atualiz|5 segundo|sync|nuvem/.test(low)) {
+                return 'Com a nuvem ativa, o catálogo sincroniza a cada 5 segundos quando a aba está aberta. Produto novo de outro admin aparece sozinho.';
+            }
             if (/dólar|dolar|usd|moeda/.test(low)) {
                 if (typeof refreshUsdRate === 'function') await refreshUsdRate();
-                return '1 USD ≈ R$ ' + Number(window._dpUsdRate || 5.5).toFixed(2);
+                return '1 USD ≈ R$ ' + Number(window._dpUsdRate || 5.5).toFixed(2) + '. Troca em Ajustes → Moeda.';
             }
             if (/status|form/.test(low)) {
                 return 'Link: ' + (link ? 'ok' : 'vazio') + ' · Título: ' + ((titleEl && titleEl.value) ? 'ok' : 'vazio') + ' · Preço: ' + ((priceEl && priceEl.value) || 'vazio');
             }
-            return 'Fala “buscar preço” (com o link em Publicar), “descrição”, “compras” ou “imagem”.';
+
+            // IA avançada opcional (Groq free) se a chave estiver em DP_CLOUD.groqApiKey
+            const gKey = (typeof DP_CLOUD !== 'undefined' && DP_CLOUD.groqApiKey) ? String(DP_CLOUD.groqApiKey).trim() : '';
+            if (gKey && s.length > 2) {
+                try {
+                    dpAiPush('bot', 'Pensando…');
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + gKey
+                        },
+                        body: JSON.stringify({
+                            model: 'llama-3.1-8b-instant',
+                            temperature: 0.4,
+                            max_tokens: 400,
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: 'Você é a ajuda do site DealPeek (ofertas/afiliados). Responda em português do Brasil, curto e claro. Pode falar de publicar link, preço, regras, segurança, afiliado, FAQ. Não invente preços. Se for sobre o site, seja prático.'
+                                },
+                                { role: 'user', content: s }
+                            ]
+                        })
+                    });
+                    if (res.ok) {
+                        const j = await res.json();
+                        const txt = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+                        if (txt) return String(txt).trim();
+                    }
+                } catch (e) {
+                    console.warn('groq', e);
+                }
+            }
+
+            return 'Posso: buscar preço, descrição, compras, imagem, é seguro?, como ganhamos, como você ganha, FAQ, termos, canais, atualização 5s.\nSe quiser IA mais avançada (conversa livre), cole uma chave grátis Groq em DP_CLOUD.groqApiKey no index.html (console.groq.com).';
         }
+
         function dpAiAsk(key) {
-            const map = { preco: 'buscar preço', 'descrição': 'descrição', descricao: 'descrição', compras: 'contador de compras', imagem: 'problema com imagem' };
+            const map = { preco: 'buscar preço', 'descrição': 'descrição', descricao: 'descrição', compras: 'contador de compras', imagem: 'problema com imagem', seguro: 'é seguro?', ganhamos: 'como ganhamos dinheiro', 'eu ganho': 'como eu ganho', faq: 'faq', termos: 'termos e regras', canal: 'canais' };
             const q = map[key] || key;
             dpAiPush('user', q);
             Promise.resolve(dpAiReply(q)).then(function(ans) { dpAiPush('bot', ans); });
@@ -7428,10 +7584,12 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
         <div class="p-2 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-1.5 bg-white dark:bg-darkcard">
             <button type="button" onclick="dpAiAsk('preco')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-brandYellow-500 text-navy-900">Buscar preço</button>
             <button type="button" onclick="dpAiAsk('descrição')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Descrição</button>
-            <button type="button" onclick="dpAiAsk('compras')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Compras</button>
-            <button type="button" onclick="dpAiAsk('imagem')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Imagem</button>
-            <button type="button" onclick="openInfoPage('terms')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Termos</button>
-            <button type="button" onclick="openChannelsModal()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Canais</button>
+            <button type="button" onclick="dpAiAsk('seguro')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">É seguro?</button>
+            <button type="button" onclick="dpAiAsk('ganhamos')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Como ganhamos</button>
+            <button type="button" onclick="dpAiAsk('eu ganho')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Como você ganha</button>
+            <button type="button" onclick="dpAiAsk('faq')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">FAQ</button>
+            <button type="button" onclick="dpAiAsk('termos')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Termos</button>
+            <button type="button" onclick="dpAiAsk('canal')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Canais</button>
         </div>
         <form onsubmit="dpAiSubmit(event)" class="p-2 border-t border-slate-200 dark:border-slate-800 flex gap-2 bg-white dark:bg-darkcard">
             <input id="dp-ai-input" type="text" placeholder="Pergunta rápida…" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
