@@ -112,8 +112,8 @@
             transition: opacity 0.55s ease-out, visibility 0.55s;
         }
         #splash-load-track {
-            width: min(300px, 78vw);
-            height: 12px;
+            width: min(360px, 84vw);
+            height: 16px;
             border-radius: 999px;
             background: rgba(255,255,255,0.12);
             overflow: hidden;
@@ -125,24 +125,24 @@
             width: 0%;
             border-radius: 999px;
             background: linear-gradient(90deg, #ca8a04 0%, #eab308 45%, #fde047 100%);
-            box-shadow: 0 0 16px rgba(234, 179, 8, 0.55);
-            transition: width 0.25s ease-out;
-        }
-        #splash-load-bar.is-indeterminate {
-            width: 40% !important;
-            animation: splash-slide 1.1s ease-in-out infinite;
-        }
-        @keyframes splash-slide {
-            0% { transform: translateX(-120%); }
-            100% { transform: translateX(320%); }
+            box-shadow: 0 0 18px rgba(234, 179, 8, 0.6);
+            transition: width 0.12s linear;
+            transform: none !important;
         }
         #splash-load-label {
-            font-size: 18px;
+            font-size: 20px;
             letter-spacing: 0.06em;
             color: #eab308;
-            margin-top: 14px;
+            margin-top: 16px;
             font-weight: 800;
             font-variant-numeric: tabular-nums;
+        }
+        /* Esconde a IA durante o splash */
+        body.splash-active #dp-ai-fab,
+        body.splash-active #dp-ai-panel {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
 
         /* Acessibilidades — idosos e crianças */
@@ -228,41 +228,108 @@
         /* ===== Mobile app layout ===== */
         @media (max-width: 767px) {
             body {
-                padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+                padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+                overflow-x: hidden;
             }
             body.cart-open,
-            body.settings-open {
+            body.settings-open,
+            body.notif-open {
                 overflow: hidden;
             }
             #mobile-bottom-nav {
                 display: flex !important;
+                z-index: 80 !important;
             }
             .hide-on-mobile {
                 display: none !important;
             }
-            header .header-icons-desktop {
-                gap: 0;
+            header {
+                z-index: 50 !important;
+            }
+            header .max-w-7xl {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            #notifications-dropdown {
+                position: fixed !important;
+                left: 0.75rem !important;
+                right: 0.75rem !important;
+                top: 3.5rem !important;
+                width: auto !important;
+                max-width: none !important;
+                max-height: min(70vh, 520px) !important;
+                z-index: 90 !important;
+                margin: 0 !important;
+                overflow: hidden;
+                display: flex !important;
+                flex-direction: column;
+            }
+            #notifications-dropdown.hidden {
+                display: none !important;
+            }
+            #notifications-list {
+                max-height: none !important;
+                flex: 1 1 auto;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            #notif-backdrop {
+                display: block;
+            }
+            #notif-backdrop.hidden {
+                display: none !important;
+            }
+            body.notif-open #carousel-section .carousel-nav-btn {
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+            #carousel-section {
+                margin-bottom: 1rem !important;
+                overflow: hidden;
+            }
+            #carousel-section .carousel-nav-btn {
+                width: 2rem !important;
+                height: 2rem !important;
             }
             #product-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 0.625rem !important;
+                gap: 0.5rem !important;
             }
             .product-card button {
-                min-height: 40px;
+                min-height: 36px;
+                font-size: 0.65rem !important;
+            }
+            .product-card .product-card-title {
+                font-size: 0.7rem !important;
+                line-height: 1.2 !important;
             }
             main {
-                padding-top: 0.75rem !important;
-                padding-bottom: 1rem !important;
+                padding: 0.5rem 0.75rem 1rem !important;
             }
             #search-input {
-                font-size: 16px; /* evita zoom no iOS */
+                font-size: 16px;
             }
-            footer {
-                padding-bottom: 0.5rem;
+            #dp-ai-fab {
+                bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+                right: 0.75rem !important;
+                width: 3rem !important;
+                height: 3rem !important;
+                z-index: 70 !important;
+            }
+            #dp-ai-panel {
+                bottom: calc(130px + env(safe-area-inset-bottom, 0px)) !important;
+                right: 0.75rem !important;
+                left: 0.75rem !important;
+                width: auto !important;
+                max-width: none !important;
+                z-index: 75 !important;
             }
         }
         @media (min-width: 768px) {
             #mobile-bottom-nav {
+                display: none !important;
+            }
+            #notif-backdrop {
                 display: none !important;
             }
         }
@@ -588,8 +655,8 @@
 <body class="dark-mode min-h-screen flex flex-col antialiased selection:bg-brandYellow-500 selection:text-navy-900 font-normal">
 
     <!-- 1. ANIMATED INTRO SPLASH SCREEN -->
-    <div id="splash-screen" class="fixed inset-0 z-50 bg-navy-900 flex flex-col items-center justify-center text-white p-4">
-        <div class="text-center mb-3">
+    <div id="splash-screen" class="fixed inset-0 z-[200] bg-navy-900 flex flex-col items-center justify-center text-white p-4">
+        <div class="text-center mb-3 animate-bounce">
             <h1 class="text-4xl sm:text-6xl font-black tracking-tight">
                 <span class="text-white">Deal</span><span class="text-brandYellow-500">Peek</span>
             </h1>
@@ -598,7 +665,7 @@
         <p class="text-slate-300 text-base sm:text-lg italic font-light tracking-wide">Peek. Buy. Smile.</p>
         <div class="mt-10 flex flex-col items-center w-full">
             <div id="splash-load-track" aria-hidden="true">
-                <div id="splash-load-bar" class="is-indeterminate"></div>
+                <div id="splash-load-bar" style="width:0%"></div>
             </div>
             <p id="splash-load-label">0%</p>
         </div>
@@ -634,6 +701,7 @@
                         </button>
 
                         <!-- Notifications Dropdown Box -->
+                        <div id="notif-backdrop" class="hidden fixed inset-0 z-[85] bg-black/50" onclick="closeNotificationsMenu()"></div>
                         <div id="notifications-dropdown" class="hidden absolute right-0 mt-2 w-[22rem] max-w-[92vw] bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder rounded-2xl shadow-2xl p-4 z-50 text-slate-800 dark:text-slate-100">
                             <div class="flex items-center justify-between mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
                                 <h4 class="font-extrabold text-xs uppercase tracking-wider">Notificações</h4>
@@ -1435,7 +1503,30 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <p class="text-[10px] text-slate-400 text-center">Faltou algo? Abre a aba Manual e corrige. Sem drama.</p>
+                                            <!-- Campos rápidos do que faltou (sem ir pro Manual inteiro) -->
+                                            <div id="pub-missing-fields" class="hidden space-y-3 rounded-2xl border border-brandYellow-500/40 bg-brandYellow-500/5 p-3">
+                                                <p class="text-xs font-extrabold text-brandYellow-500">Complete pra publicar a promoção</p>
+                                                <p id="pub-missing-hint" class="text-[11px] text-slate-500">Site de promoção precisa de preço. Preencha o que faltou.</p>
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <div>
+                                                        <label class="block text-[10px] font-bold text-slate-500 mb-1">Preço atual *</label>
+                                                        <input id="prod-price-auto" type="text" inputmode="decimal" placeholder="19,90" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-[10px] font-bold text-slate-500 mb-1">De (promo / antigo)</label>
+                                                        <input id="prod-promo-auto" type="text" inputmode="decimal" placeholder="99,90" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Descrição <span class="font-normal text-slate-400">(opcional)</span></label>
+                                                    <textarea id="prod-desc-auto" rows="2" placeholder="Specs rápidas do produto…" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500 resize-y"></textarea>
+                                                </div>
+                                                <div id="pub-missing-title-wrap" class="hidden">
+                                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Título *</label>
+                                                    <input id="prod-title-auto" type="text" placeholder="Nome do produto" class="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                                </div>
+                                            </div>
+                                            <p class="text-[10px] text-slate-400 text-center">Faltou foto ou outro detalhe? Aba Manual.</p>
                                         </div>
 
                                         <!-- ===== MODO MANUAL ===== -->
@@ -1452,11 +1543,11 @@
                                             <div class="grid grid-cols-2 gap-3">
                                                 <div>
                                                     <label class="block text-xs font-bold text-slate-500 mb-1">Preço (R$) *</label>
-                                                    <input id="prod-price" type="text" inputmode="decimal" placeholder="3219,08" oninput="syncLinkPreviewFromFields()" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+                                                    <input id="prod-price" type="text" inputmode="decimal" placeholder="Preço atual ex: 19,90" oninput="syncLinkPreviewFromFields()" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs font-bold text-emerald-600 mb-1">Promo (opcional)</label>
-                                                    <input id="prod-promo" type="text" inputmode="decimal" placeholder="2999,00" oninput="syncLinkPreviewFromFields()" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                    <input id="prod-promo" type="text" inputmode="decimal" placeholder="De (antigo) ex: 99,90" oninput="syncLinkPreviewFromFields()" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-emerald-500/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                                 </div>
                                             </div>
                                             <div class="grid grid-cols-2 gap-3">
@@ -2401,6 +2492,8 @@
                     if (typeof applyProductFilters === 'function') applyProductFilters();
                     if (typeof renderAnnouncements === 'function') renderAnnouncements();
                     if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
+                } else if (typeof applyProductFilters === 'function') {
+                    // mesmo sem mudança de lista, reembaralha leve no próximo ciclo natural via sort default
                 }
             } catch (e) {
                 console.warn('liveSync', e);
@@ -2602,17 +2695,22 @@
                 const bar = document.getElementById('splash-load-bar');
                 const label = document.getElementById('splash-load-label');
                 if (!splash) return;
+                document.body.classList.add('splash-active');
                 if (bar) {
                     bar.classList.remove('is-indeterminate');
+                    bar.style.transform = 'none';
                     bar.style.width = '0%';
                 }
                 if (label) label.textContent = '0%';
                 let pct = 0;
+                let last = 0;
                 const timer = setInterval(function() {
-                    pct += 4;
-                    if (pct > 100) pct = 100;
+                    // só avança (nunca volta)
+                    pct = Math.min(100, pct + 3);
+                    if (pct < last) pct = last;
+                    last = pct;
                     if (bar) bar.style.width = pct + '%';
-                    if (label) label.textContent = pct + '%';
+                    if (label) label.textContent = Math.floor(pct) + '%';
                     if (pct >= 100) {
                         clearInterval(timer);
                         setTimeout(function() {
@@ -2620,10 +2718,11 @@
                             setTimeout(function() {
                                 splash.style.visibility = 'hidden';
                                 splash.style.pointerEvents = 'none';
+                                document.body.classList.remove('splash-active');
                             }, 400);
-                        }, 180);
+                        }, 200);
                     }
-                }, 32);
+                }, 40);
             })();
 
             // Limpa a barra de busca de forma agressiva (Edge grava histórico de autofill)
@@ -2701,8 +2800,9 @@
                 // Notifications Dropdown Close
                 const notifWrapper = document.getElementById('notif-wrapper');
                 const notifDropdown = document.getElementById('notifications-dropdown');
-                if (notifWrapper && !notifWrapper.contains(event.target)) {
-                    notifDropdown.classList.add('hidden');
+                if (notifWrapper && notifDropdown && !notifWrapper.contains(event.target) && !notifDropdown.contains(event.target)) {
+                    if (typeof closeNotificationsMenu === 'function') closeNotificationsMenu();
+                    else notifDropdown.classList.add('hidden');
                 }
 
                 // Profile Menu Close
@@ -2847,6 +2947,111 @@
                 if (cur) sellerSel.value = cur;
             }
         }
+
+        // ===== Personalização estilo marketplace (gosto + aleatório + novidades no meio) =====
+        function getTasteProfile() {
+            try { return JSON.parse(localStorage.getItem('dp_taste') || '{}'); } catch (e) { return {}; }
+        }
+        function saveTasteProfile(p) {
+            try { localStorage.setItem('dp_taste', JSON.stringify(p)); } catch (e) {}
+        }
+        function recordProductInterest(productId, weight) {
+            const p = (products || []).find(function(x) { return x && String(x.id) === String(productId); });
+            if (!p) return;
+            const taste = getTasteProfile();
+            if (!taste.stores) taste.stores = {};
+            if (!taste.owners) taste.owners = {};
+            if (!taste.words) taste.words = {};
+            if (!taste.seen) taste.seen = {};
+            const w = Number(weight) || 1;
+            const store = p.store || (typeof detectStoreFromUrl === 'function' ? detectStoreFromUrl(p.affiliateUrl || '') : '') || '';
+            if (store) taste.stores[store] = (taste.stores[store] || 0) + w;
+            if (p.owner) taste.owners[p.owner] = (taste.owners[p.owner] || 0) + w;
+            taste.seen[String(p.id)] = (taste.seen[String(p.id)] || 0) + w;
+            String(p.title || '').toLowerCase().split(/[^a-záàâãéêíóôõúç0-9]+/i).forEach(function(wrd) {
+                if (wrd.length < 4) return;
+                taste.words[wrd] = (taste.words[wrd] || 0) + w * 0.35;
+            });
+            // limita tamanho
+            const trimMap = function(obj, max) {
+                const keys = Object.keys(obj);
+                if (keys.length <= max) return;
+                keys.sort(function(a,b) { return obj[a] - obj[b]; });
+                keys.slice(0, keys.length - max).forEach(function(k) { delete obj[k]; });
+            };
+            trimMap(taste.words, 80);
+            trimMap(taste.seen, 120);
+            saveTasteProfile(taste);
+        }
+        function scoreProductForUser(p, taste) {
+            if (!p) return 0;
+            let score = 0;
+            const store = p.store || (typeof detectStoreFromUrl === 'function' ? detectStoreFromUrl(p.affiliateUrl || '') : '') || '';
+            if (store && taste.stores && taste.stores[store]) score += Math.min(25, taste.stores[store] * 2);
+            if (p.owner && taste.owners && taste.owners[p.owner]) score += Math.min(15, taste.owners[p.owner] * 1.5);
+            if (taste.seen && taste.seen[String(p.id)]) score += Math.min(20, taste.seen[String(p.id)] * 3);
+            const title = String(p.title || '').toLowerCase();
+            if (taste.words) {
+                Object.keys(taste.words).forEach(function(w) {
+                    if (title.indexOf(w) >= 0) score += Math.min(8, taste.words[w]);
+                });
+            }
+            // engajamento global leve
+            score += Math.min(12, (p.views || 0) * 0.05);
+            score += Math.min(15, (p.buyClicks || 0) * 2);
+            // novidade: produtos recentes ganham boost, mas não dominam o topo sozinhos
+            const age = Date.now() - (Number(p.id) || Date.now());
+            if (age < 10 * 60 * 1000) score += 18; // 10 min
+            else if (age < 60 * 60 * 1000) score += 10;
+            else if (age < 24 * 60 * 60 * 1000) score += 4;
+            // ruído pra não ficar previsível (estilo ML)
+            score += Math.random() * 8;
+            return score;
+        }
+        /** Ordena por gosto + mistura aleatória + encaixa novidades no meio (não só no topo) */
+        function rankProductsLikeMarketplace(list) {
+            const taste = getTasteProfile();
+            const scored = (list || []).map(function(p) {
+                return { p: p, s: scoreProductForUser(p, taste) };
+            });
+            scored.sort(function(a, b) { return b.s - a.s; });
+
+            // Separa "bem novos" (últimos 30 min) para espalhar no meio
+            const now = Date.now();
+            const fresh = [];
+            const rest = [];
+            scored.forEach(function(row) {
+                const age = now - (Number(row.p.id) || now);
+                if (age < 30 * 60 * 1000) fresh.push(row.p);
+                else rest.push(row.p);
+            });
+
+            // Embaralha levemente o "rest" em blocos (diversidade)
+            const out = rest.slice();
+            // Injeta produtos novos em posições aleatórias do meio (não índice 0 sempre)
+            fresh.forEach(function(fp) {
+                if (!out.length) {
+                    out.push(fp);
+                    return;
+                }
+                const min = Math.min(2, out.length); // evita só o topo
+                const max = out.length;
+                const pos = min + Math.floor(Math.random() * Math.max(1, max - min));
+                out.splice(pos, 0, fp);
+            });
+
+            // A cada ~4 itens, troca com um vizinho aleatório (ruído controlado)
+            for (let i = 3; i < out.length; i += 4) {
+                const j = Math.floor(Math.random() * out.length);
+                if (j === 0) continue;
+                const tmp = out[i];
+                out[i] = out[j];
+                out[j] = tmp;
+            }
+            return out;
+        }
+
+
         function applyProductFilters() {
             let list = (products || []).slice();
             const status = (document.getElementById('filter-status') || {}).value || 'active';
@@ -2902,7 +3107,10 @@
                 return db - da;
             });
             else if (sort === 'buys') list.sort(function(a,b) { return (b.buyClicks || 0) - (a.buyClicks || 0); });
-            else list.sort(function(a,b) { return (b.id || 0) - (a.id || 0); });
+            else {
+                // Padrão: gosto do usuário + novidades no meio + um pouco de aleatório (estilo ML)
+                list = rankProductsLikeMarketplace(list);
+            }
 
             renderProducts(list);
         }
@@ -2935,6 +3143,7 @@
             const item = products.find(p => p.id === id);
             if (!item) return;
             item.views = (item.views || 0) + 1;
+            if (typeof recordProductInterest === 'function') recordProductInterest(item.id, 1.2);
             try {
                 document.title = (item.title || 'Oferta') + ' | DealPeek';
                 let md = document.querySelector('meta[name="description"]');
@@ -3317,6 +3526,7 @@
                 localStorage.setItem('dp_buy_history', JSON.stringify(hist));
             } catch (e) {}
             if (productId != null) {
+                if (typeof recordProductInterest === 'function') recordProductInterest(productId, 3);
                 const p = (products || []).find(function(x) { return x && String(x.id) === String(productId); });
                 if (p) {
                     p.buyClicks = Math.floor(Number(p.buyClicks) || 0) + 1;
@@ -4159,29 +4369,32 @@ function updateAdminMetrics() {
                 box.innerHTML = list.map(function(n) {
                     const isOffer = n.type === 'offer' || n.auto || n.productId;
                     if (isOffer && (n.productId || n.image)) {
-                        const img = n.image
-                            ? '<img src="' + String(n.image).replace(/"/g, '') + '" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-200 flex-shrink-0" onerror="this.style.display=\'none\'">'
-                            : '<div class="w-12 h-12 rounded-lg bg-slate-200 dark:bg-slate-800 flex-shrink-0"></div>';
+                        const imgSrc = n.image ? String(n.image).replace(/"/g, '') : '';
+                        const img = imgSrc
+                            ? '<img src="' + imgSrc + '" alt="" class="notif-img w-14 h-14 sm:w-12 sm:h-12 rounded-xl object-contain bg-slate-200 dark:bg-slate-800 flex-shrink-0" onerror="this.style.display=\'none\'">'
+                            : '<div class="notif-img w-14 h-14 rounded-xl bg-slate-200 dark:bg-slate-800 flex-shrink-0"></div>';
                         const pid = n.productId != null ? n.productId : '';
                         const link = String(n.link || '').replace(/'/g, "\\'");
+                        const name = String(n.name || n.fullTitle || n.body || '').replace(/</g, '&lt;');
                         return (
-                            '<div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">' +
-                            '<div class="flex gap-2.5">' +
+                            '<div class="notif-card p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">' +
+                            '<div class="notif-card-row flex gap-3 items-start">' +
                             img +
                             '<div class="min-w-0 flex-1">' +
                             '<p class="text-[10px] font-black uppercase text-brandYellow-500">' + String(n.title || 'Oferta').replace(/</g, '&lt;') + '</p>' +
-                            '<p class="text-xs font-bold text-slate-800 dark:text-slate-100 leading-snug mt-0.5">' + String(n.name || n.fullTitle || '').replace(/</g, '&lt;') + '</p>' +
-                            '<p class="text-[10px] text-slate-400 mt-0.5">' + String(n.body || '').replace(/</g, '&lt;') + '</p>' +
-                            '<div class="flex gap-1.5 mt-2">' +
+                            '<p class="text-xs font-bold text-slate-800 dark:text-slate-100 leading-snug mt-0.5 line-clamp-2">' + name + '</p>' +
+                            (n.body && n.name ? '<p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1">' + String(n.body).replace(/</g, '&lt;') + '</p>' : '') +
+                            '</div></div>' +
+                            '<div class="flex gap-2 mt-2.5">' +
                             (pid !== ''
-                                ? '<button type="button" onclick="event.stopPropagation(); addToCartFromAny(' + pid + ')" class="flex-1 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-[10px] font-bold">Carrinho</button>'
+                                ? '<button type="button" onclick="event.stopPropagation(); addToCartFromAny(' + pid + ')" class="flex-1 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-[11px] font-bold">Carrinho</button>'
                                 : '') +
                             (link
-                                ? '<button type="button" onclick="event.stopPropagation(); buyAffiliateProduct(\'' + link + '\')" class="flex-1 py-1.5 rounded-lg bg-brandYellow-500 text-navy-900 text-[10px] font-extrabold">Comprar</button>'
+                                ? '<button type="button" onclick="event.stopPropagation(); buyAffiliateProduct(\'' + link + '\')" class="flex-1 py-2 rounded-xl bg-brandYellow-500 text-navy-900 text-[11px] font-extrabold">Comprar</button>'
                                 : (pid !== ''
-                                    ? '<button type="button" onclick="event.stopPropagation(); openProductDetail && openProductDetail(' + pid + ')" class="flex-1 py-1.5 rounded-lg bg-brandYellow-500 text-navy-900 text-[10px] font-extrabold">Ver</button>'
+                                    ? '<button type="button" onclick="event.stopPropagation(); if(typeof openProductDetail===\'function\')openProductDetail(' + pid + ')" class="flex-1 py-2 rounded-xl bg-brandYellow-500 text-navy-900 text-[11px] font-extrabold">Ver</button>'
                                     : '')) +
-                            '</div></div></div></div>'
+                            '</div></div>'
                         );
                     }
                     // Aviso manual (novos no topo)
@@ -4273,7 +4486,18 @@ function updateAdminMetrics() {
             const dd = document.getElementById('notifications-dropdown');
             if (!dd) return;
             dd.classList.toggle('hidden');
-            if (!dd.classList.contains('hidden')) renderNotificationsList();
+            const open = !dd.classList.contains('hidden');
+            document.body.classList.toggle('notif-open', open);
+            const bd = document.getElementById('notif-backdrop');
+            if (bd) bd.classList.toggle('hidden', !open);
+            if (open) renderNotificationsList();
+        }
+        function closeNotificationsMenu() {
+            const dd = document.getElementById('notifications-dropdown');
+            if (dd) dd.classList.add('hidden');
+            const bd = document.getElementById('notif-backdrop');
+            if (bd) bd.classList.add('hidden');
+            document.body.classList.remove('notif-open');
         }
 
         // Authentication Handlers
@@ -5645,6 +5869,66 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
         // Publish item as announcement, product, or both
         
         
+
+        function syncAutoMissingToForm() {
+            const map = [
+                ['prod-price-auto', 'prod-price'],
+                ['prod-promo-auto', 'prod-promo'],
+                ['prod-desc-auto', 'prod-desc'],
+                ['prod-title-auto', 'prod-title']
+            ];
+            map.forEach(function(pair) {
+                const a = document.getElementById(pair[0]);
+                const b = document.getElementById(pair[1]);
+                if (a && b && a.value) b.value = a.value;
+            });
+        }
+        function showMissingPublishFields(meta) {
+            const box = document.getElementById('pub-missing-fields');
+            if (!box) return;
+            meta = meta || window._dpLinkMeta || {};
+            const needPrice = meta.price == null || !(meta.price > 0);
+            const needTitle = !(meta.title || ((document.getElementById('prod-title') || {}).value || '').trim());
+            const needDesc = !(meta.description || ((document.getElementById('prod-desc') || {}).value || '').trim());
+
+            // sempre mostra preço + promo em site de promoção; descrição opcional
+            box.classList.remove('hidden');
+            const priceA = document.getElementById('prod-price-auto');
+            const promoA = document.getElementById('prod-promo-auto');
+            const descA = document.getElementById('prod-desc-auto');
+            const titleWrap = document.getElementById('pub-missing-title-wrap');
+            const titleA = document.getElementById('prod-title-auto');
+            const priceMain = document.getElementById('prod-price');
+            const promoMain = document.getElementById('prod-promo');
+            const descMain = document.getElementById('prod-desc');
+            const titleMain = document.getElementById('prod-title');
+
+            if (priceA && priceMain) priceA.value = priceMain.value || (meta.price != null ? formatMoneyBrInput(meta.price) : '');
+            if (promoA && promoMain) promoA.value = promoMain.value || '';
+            if (descA && descMain) descA.value = descMain.value || meta.description || '';
+            if (titleWrap) titleWrap.classList.toggle('hidden', !needTitle);
+            if (titleA && titleMain) titleA.value = titleMain.value || meta.title || '';
+
+            const hint = document.getElementById('pub-missing-hint');
+            if (hint) {
+                if (needPrice && needTitle) hint.textContent = 'Faltou título e preço. Preencha abaixo (promo = preço antigo “De”).';
+                else if (needPrice) hint.textContent = 'Não achei o preço no link. Informe o preço atual e, se quiser, o “De” da promoção.';
+                else hint.textContent = 'Confira o preço e a promoção. Descrição é opcional.';
+            }
+
+            // espelha digitação pro formulário principal
+            ['prod-price-auto','prod-promo-auto','prod-desc-auto','prod-title-auto'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (!el || el._dpBound) return;
+                el._dpBound = true;
+                el.addEventListener('input', function() {
+                    syncAutoMissingToForm();
+                    if (typeof syncLinkPreviewFromFields === 'function') syncLinkPreviewFromFields();
+                });
+            });
+        }
+
+
         function setPublishMode(mode) {
             const auto = document.getElementById('pub-mode-auto');
             const manual = document.getElementById('pub-mode-manual');
@@ -5817,6 +6101,12 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             });
         }
 
+        function fetchWithTimeout(resource, options, ms) {
+            const ctrl = new AbortController();
+            const id = setTimeout(function() { try { ctrl.abort(); } catch (e) {} }, ms || 4500);
+            const opts = Object.assign({}, options || {}, { signal: ctrl.signal });
+            return fetch(resource, opts).finally(function() { clearTimeout(id); });
+        }
         async function fetchProductFromLink(force) {
             const input = document.getElementById('prod-affiliate-url');
             if (!input) return null;
@@ -5866,7 +6156,7 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
 
             // 1) Microlink
             try {
-                const res = await fetch('https://api.microlink.io?url=' + encodeURIComponent(url) + '&palette=false&audio=false&video=false&iframe=false');
+                const res = await fetchWithTimeout('https://api.microlink.io?url=' + encodeURIComponent(url) + '&palette=false&audio=false&video=false&iframe=false', { method: 'GET' }, 4000);
                 if (res.ok) {
                     const json = await res.json();
                     const d = json && json.data;
@@ -5893,7 +6183,7 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
                     if (proxies[pi].indexOf('jina') >= 0) fetchUrl = proxies[pi] + url;
                     else if (proxies[pi].indexOf('corsproxy') >= 0) fetchUrl = proxies[pi] + encodeURIComponent(url);
                     else fetchUrl = proxies[pi] + encodeURIComponent(url);
-                    const res2 = await fetch(fetchUrl, { method: 'GET' });
+                    const res2 = await fetchWithTimeout(fetchUrl, { method: 'GET' }, 5000);
                     if (!res2.ok) continue;
                     const html = await res2.text();
                     if (!html || html.length < 50) continue;
@@ -6060,12 +6350,13 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
 
             if (mainPrice != null) {
                 setLinkFetchStatus('Preço achado: R$ ' + formatMoneyBrInput(mainPrice) + (found.length ? ' · ' + found.join(', ') : ''), 'ok');
-                if (typeof showSiteToast === 'function') showSiteToast('Preço: R$ ' + formatMoneyBrInput(mainPrice), 'success');
             } else if (found.length) {
-                setLinkFetchStatus('Achei ' + found.join(', ') + ', mas o preço não veio. Abre Manual e digita o valor.', 'err');
+                setLinkFetchStatus('Achei ' + found.join(', ') + '. Falta o preço — preencha abaixo.', 'err');
             } else {
-                setLinkFetchStatus('Não li esse site. Cola outro link ou preenche no Manual.', 'err');
+                setLinkFetchStatus('Link ok. Complete preço e promoção abaixo.', 'err');
             }
+            // Sempre oferece preço + promo + desc opcional (site de promoção)
+            if (typeof showMissingPublishFields === 'function') showMissingPublishFields(window._dpLinkMeta);
             return window._dpLinkMeta;
         }
 
@@ -6223,6 +6514,8 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
         }
 
         async function publishItem(mode) {
+            if (typeof syncAutoMissingToForm === 'function') syncAutoMissingToForm();
+
             if (!currentAdmin) {
                 if (typeof showSiteToast === 'function') showSiteToast('Entra no admin antes de publicar.', 'error');
                 else safeAlert('Você precisa estar logado como administrador.');
