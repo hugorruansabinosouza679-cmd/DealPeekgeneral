@@ -1257,7 +1257,7 @@
                                     <span class="text-slate-400">›</span>
                                 </button>
                                 <button type="button" onclick="openBugReportModal && openBugReportModal()" class="w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
-                                    <div class="flex-1"><h4 class="font-semibold text-sm">Relatar bugs ou sugerir melhorias</h4><p class="text-[10px] text-slate-400">Fale com o criador</p></div>
+                                    <div class="flex-1"><h4 class="font-semibold text-sm">Relatar bugs ou sugerir melhorias</h4><p class="text-[10px] text-slate-400">Vai pro painel do admin principal</p></div>
                                     <span class="text-slate-400">›</span>
                                 </button>
                                 <button type="button" onclick="copySiteLink && copySiteLink()" class="w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
@@ -5486,7 +5486,8 @@ function updateAdminMetrics() {
                     const subject = encodeURIComponent('[DealPeek] Novo pedido de conta Admin');
                     const body = encodeURIComponent('Alguém pediu conta admin:\n\nE-mail: ' + email + '\nUsuário: ' + u + '\n\nAprove no painel Admin do site.');
                     // abre e-mail ao dono (notificação)
-                    window.open('mailto:' + ownerEm + '?subject=' + subject + '&body=' + body, '_blank');
+                    // feedback/pedidos ficam só no site (painel do dono), sem abrir e-mail
+                    if (typeof showSiteToast === 'function') showSiteToast('Pedido registrado no site para o admin principal.', 'success');
                 } catch (e) {}
             }
             try {
@@ -7438,36 +7439,50 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             const msg = (document.getElementById('bug-report-msg') || {}).value || '';
             const email = (document.getElementById('bug-report-email') || {}).value || '';
             if (!msg.trim()) {
-                safeAlert('Escreva a mensagem.');
+                if (typeof showSiteToast === 'function') showSiteToast('Escreva a mensagem.', 'error');
+                else safeAlert('Escreva a mensagem.');
                 return;
             }
-            const OWNER_EMAIL = 'hugorruansabinosouza679@gmail.com';
+            const OWNER_EMAIL = (typeof DP_OWNER_EMAIL !== 'undefined' && DP_OWNER_EMAIL)
+                ? DP_OWNER_EMAIL
+                : 'hugorruansabinosouza679@gmail.com';
             let list = [];
-            try { list = JSON.parse(localStorage.getItem('dp_bug_reports') || '[]'); } catch (err) {}
-            list.unshift({
+            try { list = JSON.parse(localStorage.getItem('dp_bug_reports') || '[]'); } catch (err) { list = []; }
+            const entry = {
+                id: 'fb_' + Date.now(),
                 type: type,
                 msg: msg.trim(),
-                email: email.trim(),
+                email: email.trim() || (currentUser && currentUser.email) || '',
                 at: new Date().toISOString(),
                 user: currentUser ? (currentUser.email || currentUser.username) : null,
                 name: currentUser ? (currentUser.name || currentUser.fullName || currentUser.displayName || currentUser.username || '') : '',
-                to: OWNER_EMAIL
-            });
-            try { localStorage.setItem('dp_bug_reports', JSON.stringify(list.slice(0, 100))); } catch (err) {}
-            const subject = encodeURIComponent('[DealPeek] ' + (type === 'melhoria' ? 'Sugestão' : type === 'outro' ? 'Feedback' : 'Bug'));
-            const body = encodeURIComponent(
-                'Tipo: ' + type + '\n\n' + msg.trim() +
-                (email ? '\n\nContato do remetente: ' + email : '') +
-                '\n\n— Enviado pelo DealPeek General'
-            );
-            // Destinatário fixo: apenas o e-mail do dono
-            const mailto = 'mailto:' + OWNER_EMAIL + '?subject=' + subject + '&body=' + body;
-            try { window.location.href = mailto; } catch (err) {}
-            safeAlert('Obrigado! Seu feedback será enviado para ' + OWNER_EMAIL);
-            document.getElementById('bug-report-msg').value = '';
-            closeBugReportModal();
+                to: OWNER_EMAIL,
+                read: false,
+                channel: 'site'
+            };
+            list.unshift(entry);
+            list = list.slice(0, 150);
+            try { localStorage.setItem('dp_bug_reports', JSON.stringify(list)); } catch (err) {}
+
+            // Sobe pra nuvem — só o admin principal vê no painel Mensagens/Sugestões
+            try {
+                if (typeof saveStore === 'function') saveStore();
+                if (typeof saveToDatabaseFolderNow === 'function') saveToDatabaseFolderNow();
+            } catch (err) {}
+
+            if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
             if (typeof renderAdminSuggestionsPanel === 'function') renderAdminSuggestionsPanel();
+
+            if (typeof showSiteToast === 'function') {
+                showSiteToast('Feedback enviado no site. O admin principal vai ver no painel.', 'success');
+            } else {
+                safeAlert('Feedback enviado no site para o admin principal.');
+            }
+            const msgEl = document.getElementById('bug-report-msg');
+            if (msgEl) msgEl.value = '';
+            closeBugReportModal();
         }
+
         function renderAdminSuggestionsPanel() {
             const panel = document.getElementById('admin-suggestions-panel');
             const listEl = document.getElementById('admin-suggestions-list');
@@ -7484,7 +7499,7 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             let list = [];
             try { list = JSON.parse(localStorage.getItem('dp_bug_reports') || '[]'); } catch (err) {}
             if (!list.length) {
-                listEl.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Nenhuma sugestão ou correção ainda.</p>';
+                listEl.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Nenhum feedback no site ainda.</p>';
                 return;
             }
             const users = window._siteUsers || [];
@@ -7882,13 +7897,4 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             <button type="button" onclick="dpAiAsk('eu ganho')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Como você ganha</button>
             <button type="button" onclick="dpAiAsk('faq')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">FAQ</button>
             <button type="button" onclick="dpAiAsk('termos')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Termos</button>
-            <button type="button" onclick="dpAiAsk('canal')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Canais</button>
-        </div>
-        <form onsubmit="dpAiSubmit(event)" class="p-2 border-t border-slate-200 dark:border-slate-800 flex gap-2 bg-white dark:bg-darkcard">
-            <input id="dp-ai-input" type="text" placeholder="Pergunta rápida…" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
-            <button type="submit" class="px-3 py-2 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">OK</button>
-        </form>
-    </div>
-
-</body>
-</html>
+            <button type="button" onclick="dpAiAsk('canal')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-
