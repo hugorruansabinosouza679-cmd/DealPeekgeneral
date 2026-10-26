@@ -139,7 +139,26 @@
         }
         /* Esconde a IA durante o splash */
         body.splash-active #dp-ai-fab,
-        body.splash-active #dp-ai-panel {
+        body.splash-active #dp-ai-panel,
+        body.splash-active #dp-game-fab {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        #dp-game-fab { display: none !important; }
+        #dp-game-modal {
+            z-index: 130;
+        }
+        #dp-game-canvas {
+            background: #0b1220;
+            border-radius: 1rem;
+            border: 2px solid #2a364f;
+            touch-action: none;
+            max-width: 100%;
+        }
+        body.splash-active #dp-ai-fab,
+        body.splash-active #dp-ai-panel,
+        body.splash-active #dp-feedback-fab {
             display: none !important;
             visibility: hidden !important;
             pointer-events: none !important;
@@ -236,7 +255,55 @@
             body.notif-open {
                 overflow: hidden;
             }
-            #mobile-bottom-nav {
+            /* Botões de canto: ajuda (direita) e feedback (esquerda) */
+        #dp-ai-fab,
+        #dp-feedback-fab {
+            position: fixed;
+            bottom: 1.1rem;
+            z-index: 90;
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+            border: 2px solid rgba(255,255,255,0.85);
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        #dp-ai-fab {
+            right: 1rem;
+            left: auto;
+            background: #eab308;
+            color: #0b1d3a;
+        }
+        #dp-feedback-fab {
+            left: 1rem;
+            right: auto;
+            background: #0b1d3a;
+            color: #eab308;
+            border-color: #eab308;
+        }
+        #dp-ai-fab:hover,
+        #dp-feedback-fab:hover {
+            transform: scale(1.06);
+        }
+        #dp-ai-fab svg,
+        #dp-feedback-fab svg {
+            width: 1rem;
+            height: 1rem;
+        }
+        @media (min-width: 640px) {
+            #dp-ai-fab,
+            #dp-feedback-fab {
+                bottom: 1.25rem;
+                width: 2.4rem;
+                height: 2.4rem;
+            }
+            #dp-ai-fab { right: 1.1rem; }
+            #dp-feedback-fab { left: 1.1rem; }
+        }
+        #mobile-bottom-nav {
                 display: flex !important;
                 z-index: 80 !important;
             }
@@ -309,17 +376,19 @@
             #search-input {
                 font-size: 16px;
             }
-            #dp-ai-fab {
-                bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
-                right: 0.75rem !important;
-                width: 3rem !important;
-                height: 3rem !important;
+            #dp-ai-fab,
+            #dp-feedback-fab {
+                bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+                width: 2.25rem !important;
+                height: 2.25rem !important;
                 z-index: 70 !important;
             }
+            #dp-ai-fab { right: 0.6rem !important; left: auto !important; }
+            #dp-feedback-fab { left: 0.6rem !important; right: auto !important; }
             #dp-ai-panel {
-                bottom: calc(130px + env(safe-area-inset-bottom, 0px)) !important;
-                right: 0.75rem !important;
-                left: 0.75rem !important;
+                bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+                right: 0.6rem !important;
+                left: 0.6rem !important;
                 width: auto !important;
                 max-width: none !important;
                 z-index: 75 !important;
@@ -691,8 +760,7 @@
                 
                 <!-- B&W Vector Line Icons -->
                 <div class="flex items-center gap-1 sm:gap-2 text-slate-700 dark:text-slate-300">
-                    
-                    <!-- Notification Bell Dropdown Wrapper -->
+<!-- Notification Bell Dropdown Wrapper -->
                     <div class="relative" id="notif-wrapper">
                         <button onclick="toggleNotificationsMenu(event)" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative transition flex flex-col items-center" title="Notificações">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"></path></svg>
@@ -1863,9 +1931,11 @@
         // NUNCA use service_role, sb_secret_ ou senha do banco neste arquivo.
         // ============================================================
         const DP_CLOUD = {
-            // Opcional: chave gratuita Groq (console.groq.com) para IA avançada no site
-            // NÃO compartilhe a chave em repositório público se o repo for público — use só se o site for seu
-            groqApiKey: '', // cole aqui: gsk_...
+            // URL do backend de IA no Render (ex: https://dealpeek-ai.onrender.com)
+            // Depois de subir o servidor, cole a URL aqui (sem barra no final)
+            aiBackendUrl: '',
+            // Opcional no frontend: só se NÃO usar Render (menos seguro em repo público)
+            groqApiKey: '',
 
             // Project URL (sem /rest/v1 — o cliente supabase-js monta a API sozinho)
             supabaseUrl: 'https://koywxalpjsbwrkjbjnee.supabase.co',
@@ -6363,6 +6433,11 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
 
 
 
+
+
+
+
+
         function toggleDpAi(force) {
             const panel = document.getElementById('dp-ai-panel');
             if (!panel) return;
@@ -6387,6 +6462,79 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         }
+
+        async function dpAiCallBackend(message, context) {
+            const base = (typeof DP_CLOUD !== 'undefined' && DP_CLOUD.aiBackendUrl) ? String(DP_CLOUD.aiBackendUrl).trim().replace(/\/$/, '') : '';
+            if (!base) return null;
+            const ctrl = new AbortController();
+            const timer = setTimeout(function() { try { ctrl.abort(); } catch (e) {} }, 45000);
+            try {
+                const res = await fetch(base + '/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, context: context || {} }),
+                    signal: ctrl.signal
+                });
+                clearTimeout(timer);
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (e) {
+                clearTimeout(timer);
+                console.warn('ai backend', e);
+                return null;
+            }
+        }
+
+        function dpAiBuildContext() {
+            const linkEl = document.getElementById('prod-affiliate-url');
+            const priceEl = document.getElementById('prod-price');
+            const titleEl = document.getElementById('prod-title');
+            const descEl = document.getElementById('prod-desc');
+            const promoEl = document.getElementById('prod-promo');
+            return {
+                site: 'DealPeek',
+                hasLink: !!(linkEl && linkEl.value),
+                link: linkEl ? (linkEl.value || '').slice(0, 300) : '',
+                title: titleEl ? (titleEl.value || '') : '',
+                price: priceEl ? (priceEl.value || '') : '',
+                promo: promoEl ? (promoEl.value || '') : '',
+                description: descEl ? String(descEl.value || '').slice(0, 400) : '',
+                productsCount: (typeof products !== 'undefined' && products) ? products.length : 0,
+                isAdmin: !!(typeof currentAdmin !== 'undefined' && currentAdmin),
+                isOwner: typeof isSiteOwner === 'function' ? !!isSiteOwner() : false,
+                lang: (typeof currentLang !== 'undefined' ? currentLang : 'pt')
+            };
+        }
+
+        async function dpAiRunActions(actions) {
+            if (!actions || !actions.length) return;
+            for (var i = 0; i < actions.length; i++) {
+                const a = actions[i];
+                if (!a || !a.type) continue;
+                try {
+                    if (a.type === 'fetch_price' || a.type === 'fetch_link') {
+                        await fetchProductFromLink(true);
+                        if (typeof showMissingPublishFields === 'function') showMissingPublishFields(window._dpLinkMeta || {});
+                    } else if (a.type === 'fetch_description') {
+                        await fetchProductFromLink(true);
+                    } else if (a.type === 'open_channels') {
+                        if (typeof openChannelsModal === 'function') openChannelsModal();
+                    } else if (a.type === 'open_feedback') {
+                        if (typeof openBugReportModal === 'function') openBugReportModal();
+                    } else if (a.type === 'open_publish') {
+                        if (typeof openAdminPanel === 'function') openAdminPanel();
+                        if (typeof showAdminSection === 'function') showAdminSection('publicar');
+                    } else if (a.type === 'set_field') {
+                        const el = document.getElementById(a.field);
+                        if (el && a.value != null) {
+                            el.value = a.value;
+                            if (typeof syncLinkPreviewFromFields === 'function') syncLinkPreviewFromFields();
+                        }
+                    }
+                } catch (e) { console.warn('ai action', a.type, e); }
+            }
+        }
+
         async function dpAiReply(q) {
             const s = String(q || '').trim();
             const low = s.toLowerCase();
@@ -6395,92 +6543,48 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             const priceEl = document.getElementById('prod-price');
             const titleEl = document.getElementById('prod-title');
 
-            // Ações do site (sempre prioritárias)
-            if (/preço|preco|buscar|link|automá|automatic|valor|achar/.test(low)) {
-                if (!link) return 'Cola o link em Admin → Publicar e fala “buscar preço”.';
+            // Ações locais rápidas (sempre, mesmo com backend)
+            if (/preço|preco|buscar link|buscar preço|automatic|automá/.test(low) && /buscar|preço|preco|link|ler|achar/.test(low)) {
+                if (!link) return 'Cola o link em Admin → Publicar e peça “buscar preço”.';
                 dpAiPush('bot', 'Lendo o link…');
                 try {
                     const meta = await fetchProductFromLink(true);
+                    if (typeof showMissingPublishFields === 'function') showMissingPublishFields(meta || {});
                     if (meta && meta.price != null) {
-                        return 'Preço: R$ ' + formatMoneyBrInput(meta.price) + (meta.title ? (' · ' + String(meta.title).slice(0, 70)) : '') + '\nFormulário preenchido.';
+                        return 'Preço: R$ ' + formatMoneyBrInput(meta.price) + (meta.title ? (' · ' + String(meta.title).slice(0, 70)) : '');
                     }
-                    if (meta && (meta.title || meta.image)) {
-                        return 'Título/foto ok, preço não veio. Digita no Manual (ex.: 199,90).';
-                    }
-                    return 'Não li esse link. Tenta outro ou preenche na mão.';
-                } catch (e) {
-                    return 'Erro ao buscar o link.';
-                }
+                    return 'Não achei preço sozinho. Preencha o campo de preço abaixo do link.';
+                } catch (e) { return 'Erro ao ler o link.'; }
             }
-            if (/descri/.test(low)) {
-                if (!link) return 'Cola o link em Publicar e fala “descrição”.';
+            if (/descri/.test(low) && link) {
                 try {
                     await fetchProductFromLink(true);
                     const d = (document.getElementById('prod-desc') || {}).value || '';
-                    if (d) return 'Descrição do produto:\n' + d.slice(0, 450);
-                    return 'Não veio ficha útil. Escreve as specs no Manual.';
-                } catch (e) {
-                    return 'Falhou ao ler descrição.';
-                }
-            }
-            if (/compra|clique|contador/.test(low)) {
-                const n = typeof normalizeSalesCounter === 'function' ? normalizeSalesCounter() : (totalSalesVal || 0);
-                if (typeof updateAdminMetrics === 'function') updateAdminMetrics();
-                return 'Toques em Comprar: ' + n + '.';
-            }
-            if (/imagem|foto|crop|recorte/.test(low)) {
-                return 'Publicar → Manual → envie foto → recorte → Confirmar. Continua no Admin.';
-            }
-            if (/canal/.test(low)) {
-                if (typeof openChannelsModal === 'function') openChannelsModal();
-                return 'Abri os canais.';
-            }
-            if (/seguro|golpe|confiança|confianca/.test(low)) {
-                return 'A compra fecha na loja (Shopee, Mercado Livre…). O DealPeek não pede cartão nem senha de banco. Use Denunciar se algo parecer estranho. Links verificados têm selo https.';
-            }
-            if (/ganhamos|comiss|afiliad|dinheiro do site|monetiz/.test(low)) {
-                return 'Ganhamos com link de afiliado: quando alguém clica em Comprar e fecha pedido na loja, a loja pode pagar comissão — sem custo extra pra quem compra. Transparência: não controlamos estoque nem preço final.';
-            }
-            if (/eu ganho|como ganhar|ser admin|divulgar/.test(low)) {
-                return 'Peça conta admin, publique ofertas com SEU link de afiliado. Regras: preço certo, descrição do produto, sem +18/golpe. O dono pode pausar posts que quebrem regra.';
-            }
-            if (/faq|dúvida|duvida|como funciona/.test(low)) {
-                return '• Preço mudou? A loja atualiza a qualquer momento.\n• Pagar o DealPeek? Não.\n• Denunciar preço: no detalhe do produto.\n• Publicar: Admin → Publicar (Automático ou Manual).\n• Idioma/dólar: Ajustes.\n• Produtos novos: o site atualiza a cada 5s pela nuvem.';
-            }
-            if (/regra|proibid|nsfw|\+18|termos/.test(low)) {
-                return '1) Oferta real com link válido\n2) Preço e descrição do PRODUTO\n3) Sem +18, golpe, ilegal, spam\n4) Preço R$ 0 ou enganoso → removido\n5) Admin pode ser suspenso com motivo\nDúvidas: hugorruansabinosouza679@gmail.com';
-            }
-            if (/atualiz|5 segundo|sync|nuvem/.test(low)) {
-                return 'Com a nuvem ativa, o catálogo sincroniza a cada 5 segundos quando a aba está aberta. Produto novo de outro admin aparece sozinho.';
-            }
-            if (/dólar|dolar|usd|moeda/.test(low)) {
-                if (typeof refreshUsdRate === 'function') await refreshUsdRate();
-                return '1 USD ≈ R$ ' + Number(window._dpUsdRate || 5.5).toFixed(2) + '. Troca em Ajustes → Moeda.';
-            }
-            if (/status|form/.test(low)) {
-                return 'Link: ' + (link ? 'ok' : 'vazio') + ' · Título: ' + ((titleEl && titleEl.value) ? 'ok' : 'vazio') + ' · Preço: ' + ((priceEl && priceEl.value) || 'vazio');
+                    return d ? ('Descrição:\n' + d.slice(0, 500)) : 'Não veio descrição útil. Escreva no campo.';
+                } catch (e) { return 'Falhou ao ler descrição.'; }
             }
 
-            // IA avançada opcional (Groq free) se a chave estiver em DP_CLOUD.groqApiKey
+            // Backend Render (IA de verdade)
+            dpAiPush('bot', 'Consultando a IA…');
+            const remote = await dpAiCallBackend(s, dpAiBuildContext());
+            if (remote && remote.reply) {
+                if (remote.actions) await dpAiRunActions(remote.actions);
+                return String(remote.reply).trim();
+            }
+
+            // Fallback local (se Render offline)
             const gKey = (typeof DP_CLOUD !== 'undefined' && DP_CLOUD.groqApiKey) ? String(DP_CLOUD.groqApiKey).trim() : '';
             if (gKey && s.length > 2) {
                 try {
-                    dpAiPush('bot', 'Pensando…');
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + gKey
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + gKey },
                         body: JSON.stringify({
                             model: 'llama-3.1-8b-instant',
                             temperature: 0.4,
-                            max_tokens: 400,
+                            max_tokens: 500,
                             messages: [
-                                {
-                                    role: 'system',
-                                    content: 'Você é a ajuda do site DealPeek (ofertas/afiliados). Responda em português do Brasil, curto e claro. Pode falar de publicar link, preço, regras, segurança, afiliado, FAQ. Não invente preços. Se for sobre o site, seja prático.'
-                                },
+                                { role: 'system', content: 'Você é a ajuda do DealPeek (ofertas/afiliados). Português do Brasil, curto e prático. Não invente preços.' },
                                 { role: 'user', content: s }
                             ]
                         })
@@ -6490,12 +6594,15 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
                         const txt = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
                         if (txt) return String(txt).trim();
                     }
-                } catch (e) {
-                    console.warn('groq', e);
-                }
+                } catch (e) {}
             }
 
-            return 'Posso: buscar preço, descrição, compras, imagem, é seguro?, como ganhamos, como você ganha, FAQ, termos, canais, atualização 5s.\nSe quiser IA mais avançada (conversa livre), cole uma chave grátis Groq em DP_CLOUD.groqApiKey no index.html (console.groq.com).';
+            // Regras offline mínimas
+            if (/seguro|golpe/.test(low)) return 'A compra fecha na loja (ML, Shopee…). O DealPeek não pede cartão. Use Denunciar se algo estranho.';
+            if (/ganhamos|afiliad/.test(low)) return 'Ganhamos com link de afiliado quando alguém compra na loja — sem custo extra pra quem compra.';
+            if (/faq|como funciona/.test(low)) return 'Publique no Admin com link, confira preço, o catálogo sincroniza na nuvem. Dúvidas: feedback no botão da esquerda.';
+            if (/regra|proibid|termos/.test(low)) return 'Oferta real, preço certo, descrição do produto, sem +18/golpe/spam. Dono pode remover posts.';
+            return 'A IA completa roda no Render. Configure DP_CLOUD.aiBackendUrl com a URL do serviço. Enquanto isso: pedir “buscar preço”, regras, FAQ, ou abrir o feedback à esquerda.';
         }
 
         function dpAiAsk(key) {
@@ -7876,15 +7983,18 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
     </footer>
     <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 
-    <!-- Assistente DealPeek (regras + ajuda) -->
-    <button type="button" id="dp-ai-fab" onclick="toggleDpAi()" class="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[90] w-14 h-14 rounded-full bg-brandYellow-500 text-navy-900 shadow-xl flex items-center justify-center font-black text-lg hover:scale-105 active:scale-95 transition border-2 border-white dark:border-darkcard" title="Ajuda DealPeek" aria-label="Abrir ajuda">
-        ?
+    <!-- Feedback (esquerda) + Ajuda (direita) — mesmo tamanho, cantos -->
+    <button type="button" id="dp-feedback-fab" onclick="openBugReportModal()" title="Relatar bug ou melhoria" aria-label="Relatar bug ou melhoria">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
     </button>
-    <div id="dp-ai-panel" class="hidden fixed bottom-36 right-4 sm:bottom-24 sm:right-6 z-[90] w-[min(100vw-2rem,22rem)] max-h-[70vh] flex flex-col rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder shadow-2xl overflow-hidden">
+    <button type="button" id="dp-ai-fab" onclick="toggleDpAi()" title="Ajuda" aria-label="Abrir ajuda">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.33l-4.22 1.29a.75.75 0 01-.94-.94l1.29-4.22A9.76 9.76 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+    </button>
+    <div id="dp-ai-panel" class="hidden fixed bottom-28 right-3 sm:bottom-20 sm:right-5 z-[90] w-[min(100vw-2rem,22rem)] max-h-[70vh] flex flex-col rounded-2xl bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder shadow-2xl overflow-hidden">
         <div class="px-4 py-3 bg-navy-900 text-white flex items-center justify-between gap-2">
             <div>
-                <p class="font-extrabold text-sm">Ajuda DealPeek</p>
-                <p class="text-[10px] text-white/70">Regras, link automático e problemas comuns</p>
+                <p class="font-extrabold text-sm">IA DealPeek</p>
+                <p class="text-[10px] text-white/70">Preço, descrição, regras e perguntas do site</p>
             </div>
             <button type="button" onclick="toggleDpAi(false)" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg leading-none">×</button>
         </div>
@@ -7897,4 +8007,14 @@ let finalImage = uploadedPngBase64 || urlInput || meta.image || '';
             <button type="button" onclick="dpAiAsk('eu ganho')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Como você ganha</button>
             <button type="button" onclick="dpAiAsk('faq')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">FAQ</button>
             <button type="button" onclick="dpAiAsk('termos')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Termos</button>
-            <button type="button" onclick="dpAiAsk('canal')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-
+            <button type="button" onclick="dpAiAsk('canal')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">Canais</button>
+        </div>
+        <form onsubmit="dpAiSubmit(event)" class="p-2 border-t border-slate-200 dark:border-slate-800 flex gap-2 bg-white dark:bg-darkcard">
+            <input id="dp-ai-input" type="text" placeholder="Pergunta rápida…" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-brandYellow-500">
+            <button type="submit" class="px-3 py-2 rounded-xl bg-brandYellow-500 text-navy-900 font-extrabold text-xs">OK</button>
+        </form>
+    </div>
+
+
+</body>
+</html>
