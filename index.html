@@ -255,55 +255,7 @@
             body.notif-open {
                 overflow: hidden;
             }
-            /* Botões de canto: ajuda (direita) e feedback (esquerda) */
-        #dp-ai-fab,
-        #dp-feedback-fab {
-            position: fixed;
-            bottom: 1.1rem;
-            z-index: 90;
-            width: 2.35rem;
-            height: 2.35rem;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.28);
-            border: 2px solid rgba(255,255,255,0.85);
-            transition: transform 0.15s ease, opacity 0.15s ease;
-        }
-        #dp-ai-fab {
-            right: 1rem;
-            left: auto;
-            background: #eab308;
-            color: #0b1d3a;
-        }
-        #dp-feedback-fab {
-            left: 1rem;
-            right: auto;
-            background: #0b1d3a;
-            color: #eab308;
-            border-color: #eab308;
-        }
-        #dp-ai-fab:hover,
-        #dp-feedback-fab:hover {
-            transform: scale(1.06);
-        }
-        #dp-ai-fab svg,
-        #dp-feedback-fab svg {
-            width: 1rem;
-            height: 1rem;
-        }
-        @media (min-width: 640px) {
-            #dp-ai-fab,
-            #dp-feedback-fab {
-                bottom: 1.25rem;
-                width: 2.4rem;
-                height: 2.4rem;
-            }
-            #dp-ai-fab { right: 1.1rem; }
-            #dp-feedback-fab { left: 1.1rem; }
-        }
-        #mobile-bottom-nav {
+            #mobile-bottom-nav {
                 display: flex !important;
                 z-index: 80 !important;
             }
@@ -378,20 +330,14 @@
             }
             #dp-ai-fab,
             #dp-feedback-fab {
-                bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
-                width: 2.25rem !important;
-                height: 2.25rem !important;
-                z-index: 70 !important;
+                bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
             }
-            #dp-ai-fab { right: 0.6rem !important; left: auto !important; }
-            #dp-feedback-fab { left: 0.6rem !important; right: auto !important; }
             #dp-ai-panel {
                 bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
-                right: 0.6rem !important;
-                left: 0.6rem !important;
-                width: auto !important;
-                max-width: none !important;
-                z-index: 75 !important;
+                right: 0.75rem !important;
+                left: auto !important;
+                width: min(22rem, calc(100vw - 1.5rem)) !important;
+                z-index: 120 !important;
             }
         }
         @media (min-width: 768px) {
@@ -719,7 +665,56 @@
         #link-fetch-status.is-loading { color: #eab308; }
         #link-fetch-status.is-ok { color: #10b981; }
         #link-fetch-status.is-err { color: #f87171; }
-        </style>
+        
+        /* ===== FABs canto — sempre visíveis (PC e notebook) ===== */
+        #dp-ai-fab,
+        #dp-feedback-fab {
+            position: fixed !important;
+            bottom: 1.25rem !important;
+            z-index: 120 !important;
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            border-radius: 999px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+            border: 2px solid rgba(255,255,255,0.9) !important;
+            cursor: pointer !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        #dp-ai-fab {
+            right: 1.25rem !important;
+            left: auto !important;
+            background: #eab308 !important;
+            color: #0b1d3a !important;
+        }
+        #dp-feedback-fab {
+            left: 1.25rem !important;
+            right: auto !important;
+            background: #0b1d3a !important;
+            color: #eab308 !important;
+            border-color: #eab308 !important;
+        }
+        #dp-ai-fab svg,
+        #dp-feedback-fab svg {
+            width: 1.05rem !important;
+            height: 1.05rem !important;
+            display: block !important;
+        }
+        body.splash-active #dp-ai-fab,
+        body.splash-active #dp-feedback-fab,
+        body.splash-active #dp-ai-panel {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+    </style>
 </head>
 <body class="dark-mode min-h-screen flex flex-col antialiased selection:bg-brandYellow-500 selection:text-navy-900 font-normal">
 
@@ -2789,6 +2784,8 @@
                                 splash.style.visibility = 'hidden';
                                 splash.style.pointerEvents = 'none';
                                 document.body.classList.remove('splash-active');
+                                // garante FABs no notebook/PC após splash
+                                ['dp-ai-fab','dp-feedback-fab'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.style.display='flex'; el.style.visibility='visible'; } });
                             }, 400);
                         }, 200);
                     }
